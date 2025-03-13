@@ -1371,11 +1371,12 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                     if (getActiveHand().equals(rightHand)) {
                         if (crouched){
                             if(moveSpeed > 0 ) { //TODO Why does this not work tf?
-//                                currentOverlay = bow_sneak_walking;
+                                currentOverlay = bow_sneak_walking;
+                                currentOverlayId = "right_bow_sneak_walking";
                             } else {
                                 currentOverlay = bow_sneak;
+                                currentOverlayId = "right_bow_sneak";
                             }
-                            currentOverlayId = "right_bow_sneak";
                             overlayFadeTime = 1;
                         } else {
                             currentOverlay = bow_idle;
@@ -1390,10 +1391,11 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                         if (crouched){
                             if(moveSpeed > 0 ) {
                                 currentOverlay = bow_sneak_walking;
+                                currentOverlayId = "left_bow_sneak_walking";
                             } else {
                                 currentOverlay = bow_sneak;
+                                currentOverlayId = "left_bow_sneak";
                             }
-                            currentOverlayId = "left_bow_sneak";
                             overlayFadeTime = 1;
                         } else {
                             currentOverlay = bow_idle;
