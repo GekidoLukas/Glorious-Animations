@@ -1,0 +1,30 @@
+{
+	"required": true,
+	"package": "net.gekidolukas.sincereplayeranimations.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"CapeRenderMixin",
+		"NEA.fullbody.NEACrawlingMixin",
+		"NEA.fullbody.NEAFallingMixin",
+		"NEA.fullbody.NEAFreezingMixin",
+		"NEA.fullbody.NEALadderMixin",
+		"NEA.hands.NEABoatMixin",
+		"NEA.hands.NEACustomBowMixin",
+		"NEA.hands.NEAEatDrinkMixin",
+		"NEA.hands.NEAHorseMixin",
+		"NEA.hands.NEAHugMixin",
+		"NEA.hands.NEAItemSwapMixin",
+		"NEA.hands.NEALookAtItemMixin",
+		"NEA.hands.NEAMapHoldingMixin",
+		"NEA.hands.NEANarutoRunningMixin",
+		"NEA.hands.NEAPetMixin"
+	],
+	"client": [
+		"ElytraEntityModelMixin",
+		"PlayerEntityRendererMixin",
+		"SeriousPlayerAnimationsMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

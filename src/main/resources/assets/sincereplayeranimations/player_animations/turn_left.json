@@ -1,0 +1,104 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"turn_left": {
+			"loop": true,
+			"animation_length": 2,
+			"bones": {
+				"torso": {
+					"rotation": {
+						"vector": [0, -20, 0]
+					}
+				},
+				"leftArm": {
+					"rotation": {
+						"vector": [13.79263, -24.90765, -15.84214]
+					},
+					"position": {
+						"vector": [-0.25, 0, 2.75]
+					}
+				},
+				"rightArm": {
+					"rotation": {
+						"vector": [-7.61435, -9.91358, 3.81845]
+					},
+					"position": {
+						"vector": [0.25, 0, -1.75]
+					}
+				},
+				"leftLeg": {
+					"rotation": {
+						"0.0": {
+							"vector": [-1.5883, -20.08919, -2.65953]
+						},
+						"0.5": {
+							"vector": [-3.30189, -13.0437, -7.6704],
+							"easing": "easeInQuad"
+						},
+						"1.0": {
+							"vector": [0.03208, -23.9326, -2.9208],
+							"easing": "easeOutQuad"
+						},
+						"2.0": {
+							"vector": [-1.5883, -20.08919, -2.65953],
+							"easing": "easeInOutQuad"
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0.25, 0, 0]
+						},
+						"0.5": {
+							"vector": [0.75, 2, -2],
+							"easing": "easeInQuad"
+						},
+						"1.0": {
+							"vector": [2.08, 0.08, -0.58],
+							"easing": "easeOutQuad"
+						},
+						"2.0": {
+							"vector": [0.25, 0, 0],
+							"easing": "easeInOutQuad"
+						}
+					}
+				},
+				"rightLeg": {
+					"rotation": {
+						"0.0": {
+							"vector": [2.93397, 9.77264, 2.52718]
+						},
+						"1.0": {
+							"vector": [1.24742, 24.6732, 10.9742],
+							"easing": "easeInOutQuad"
+						},
+						"1.5": {
+							"vector": [-0.15892, 7.3813, 6.8614],
+							"easing": "easeInQuad"
+						},
+						"2.0": {
+							"vector": [2.93397, 9.77264, 2.52718],
+							"easing": "easeOutQuad"
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [-0.25, 0, 0]
+						},
+						"1.0": {
+							"vector": [-0.25, -0.25, 0],
+							"easing": "easeInOutQuad"
+						},
+						"1.5": {
+							"vector": [-0.25, 1.88, -2],
+							"easing": "easeInQuad"
+						},
+						"2.0": {
+							"vector": [-0.25, 0, 0],
+							"easing": "easeOutQuad"
+						}
+					}
+				}
+			}
+		}
+	}
+}
