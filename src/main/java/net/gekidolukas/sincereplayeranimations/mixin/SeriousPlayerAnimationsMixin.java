@@ -79,7 +79,17 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         super(world, pos, yaw, gameProfile);
     }
 
+    @Unique
+    public boolean isStillSprinting() {
 
+        if(this.isSprinting()) {
+            sprintTicks = 5;
+        }
+
+        return sprintTicks > 0;
+    }
+
+    private int sprintTicks = 0;
 
     private int afterAttackTicks = 0;
 
@@ -525,6 +535,9 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         if(getAfterAttackTicks() > 0) {
             this.afterAttackTicks--;
         }
+        if(sprintTicks > 0) {
+            this.sprintTicks--;
+        }
     }
 
 
@@ -704,6 +717,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         isMovingBackwards = movementVector.length() > 0 && movementVector.dot(lookVector) < 0;
 
 
+
         currentOverlay = blank_loop;
         currentOverlayId = "blank_loop";
         overlayFadeTime = 10;
@@ -712,8 +726,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
         crouched = isInSneakingPose();
 
+
+
         //walking
-        if (moveSpeed < 0.23 && moveSpeed > 0 && !isMovingBackwards && !crouched) {
+        if (!isStillSprinting() && moveSpeed < 0.23 && moveSpeed > 0 && !isMovingBackwards && !crouched) {
             if (((9 / 0.22) * moveSpeed) > 1) {
                 animationSpeed = (float) ((9 / 0.22) * moveSpeed * config.getWalking().speedMultiplier);
             } else {
@@ -721,6 +737,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             }
             currentAnimation = walking;
             currentAnimationId = "walking";
+            LOGGER.info("Walking");
             if (!config.getWalking().enabled) {
                 disableAnimation();
             }
@@ -747,19 +764,19 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
             //running
         } else
-            if (moveSpeed > 0.23 && isSprinting() && !isMovingBackwards && !crouched) {
-            if (((3 / 0.28) * moveSpeed) > 1) {
-                animationSpeed = (float) ((3 / 0.28) * moveSpeed * config.getRunning().speedMultiplier);
-            } else {
-                animationSpeed = 1 * config.getRunning().speedMultiplier;
-            }
-            currentAnimation = running;
-            currentAnimationId = "running";
-            if (!config.getRunning().enabled) {
-                disableAnimation();
-            }
-            fadeTime = 2;
-            priority = 0;
+            if (moveSpeed > 0.23 && isStillSprinting() && !isMovingBackwards && !crouched) {
+                if (((3 / 0.28) * moveSpeed) > 1) {
+                    animationSpeed = (float) ((3 / 0.28) * moveSpeed * config.getRunning().speedMultiplier);
+                } else {
+                    animationSpeed = 1 * config.getRunning().speedMultiplier;
+                }
+                currentAnimation = running;
+                currentAnimationId = "running";
+                if (!config.getRunning().enabled) {
+                    disableAnimation();
+                }
+                fadeTime = 2;
+                priority = 0;
 
 
             //standing & turning
@@ -1252,7 +1269,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             } else if (getMainHandStack().getItem() instanceof ShovelItem && preferredHand.equals(MAIN_HAND)) {
                 loopedToolAnimation(shovel, shovel_sneak, "shovel", config.getShovel(), 1, 1.5f, 0);
                 //mace
-            } else if (getMainHandStack().getItem() instanceof MaceItem && preferredHand.equals(MAIN_HAND)) {
+            } else if (!hasVehicle() && !isOnGround() && getMainHandStack().getItem() instanceof MaceItem && preferredHand.equals(MAIN_HAND)) {
                 loopedToolAnimation(mace, mace, "mace", config.getAxe(), 3, 1.5f, 0);
 
             } else if (afterAttackTicks > 0) {

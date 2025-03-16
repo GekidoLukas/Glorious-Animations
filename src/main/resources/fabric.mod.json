@@ -3,15 +3,16 @@
   "id": "seriousplayeranimations",
   "version": "${version}",
 
-  "name": "Sincere Player Animations",
+  "name": "Glorious Animations",
   "description": "This mod adds cool animations to the player.",
   "authors": [
-    "McVader",
-    "GekidoLukas"
+    "GekidoLukas",
+    "onemeyn",
+    "McVader"
   ],
   "contact": {
     "homepage": "https://modrinth.com/user/GekidoLukas",
-    "sources": "https://github.com/GekidoLukas/Serious-Player-Animations"
+    "sources": "https://github.com/GekidoLukas/Glorious-Animations"
   },
 
   "license": "MIT",
