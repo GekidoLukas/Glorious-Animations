@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "net.gekidolukas.sincereplayeranimations.mixin",
+  "package": "net.gekidolukas.glorious_animations.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "CapeRenderMixin",

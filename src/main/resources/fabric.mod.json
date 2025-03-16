@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "seriousplayeranimations",
+  "id": "glorious_animations",
   "version": "${version}",
 
   "name": "Glorious Animations",
@@ -16,17 +16,17 @@
   },
 
   "license": "MIT",
-  "icon": "sincereplayeranimations/icon.png",
+  "icon": "assets/glorious_animations/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.gekidolukas.sincereplayeranimations.SincerePlayerAnimations"
+      "net.gekidolukas.glorious_animations.GloriousAnimations"
     ],
     "client": [
     ],
     "modmenu": [
-      "net.gekidolukas.sincereplayeranimations.config.ModMenuConfig"
+      "net.gekidolukas.glorious_animations.config.ModMenuConfig"
     ]
   },
   "mixins": [
@@ -46,7 +46,7 @@
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/client/network/AbstractClientPlayerEntity": ["net/gekidolukas/sincereplayeranimations/torsoPosGetter"]
+      "net/minecraft/client/network/AbstractClientPlayerEntity": ["net/gekidolukas/glorious_animations/torsoPosGetter"]
       },
     "modmenu": {
       "links": {
