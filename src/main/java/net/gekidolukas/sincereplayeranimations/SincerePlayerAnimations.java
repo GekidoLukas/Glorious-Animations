@@ -5,6 +5,7 @@ import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.gekidolukas.sincereplayeranimations.config.ClientConfig;
 import net.gekidolukas.sincereplayeranimations.config.ConfigWrapper;
@@ -44,8 +45,13 @@ public class SincerePlayerAnimations implements ModInitializer, ClientModInitial
 
 
 
+
 	@Override
 	public void onInitializeClient()  {
+
+		ClientTickEvents.END_CLIENT_TICK.register((minecraftClient -> {
+
+		}));
 
 	}
 }

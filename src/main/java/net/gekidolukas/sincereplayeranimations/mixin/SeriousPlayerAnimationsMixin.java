@@ -16,6 +16,7 @@ import net.gekidolukas.sincereplayeranimations.compat.*;
 import net.gekidolukas.sincereplayeranimations.config.ClientConfig;
 import net.gekidolukas.sincereplayeranimations.torsoPosGetter;
 import net.minecraft.block.*;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.world.ClientWorld;
@@ -64,7 +65,11 @@ import static net.minecraft.util.Hand.OFF_HAND;
 public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implements IExampleAnimatedPlayer, torsoPosGetter {
 
 
+
+
     @Shadow @Final public ClientWorld clientWorld;
+
+    @Shadow public abstract void tick();
 
     private final ModifierLayer<IAnimation> modAnimationContainer = new ModifierLayer<>();
     
@@ -76,6 +81,19 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
 
+    private int afterAttackTicks = 0;
+
+    @Override
+    public int getAfterAttackTicks() {
+        return this.afterAttackTicks;
+    }
+
+    @Override
+    public void setAfterAttackTicks(int ticks) {
+        this.afterAttackTicks = ticks;
+    }
+
+    public KeyframeAnimation punch = null;
     public KeyframeAnimation sword_attack = null;
     public KeyframeAnimation sword_attack2 = null;
     public KeyframeAnimation idle_standing = null;
@@ -92,6 +110,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     public KeyframeAnimation sword_attack_sneak = null;
     public KeyframeAnimation sword_attack_sneak2 = null;
     public KeyframeAnimation falling = null;
+    public KeyframeAnimation falling_mace = null;
     public KeyframeAnimation blank_loop = null;
     public KeyframeAnimation elytra = null;
     public KeyframeAnimation eating_right = null;
@@ -111,6 +130,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     public KeyframeAnimation climbing = null;
     public KeyframeAnimation climbing_sneak = null;
     public KeyframeAnimation climbing_backwards = null;
+    public KeyframeAnimation mace = null;
     public KeyframeAnimation pickaxe = null;
     public KeyframeAnimation pickaxe_sneak = null;
     public KeyframeAnimation minecart_idle = null;
@@ -160,6 +180,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
     
     public void reloadAnimationVariables() {
+        punch = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "punch"));
         sword_attack = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sword_attack"));
         sword_attack2 = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sword_attack2"));
         idle_standing = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_standing"));
@@ -177,6 +198,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         sword_attack_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sword_attack_sneak"));
         sword_attack_sneak2 = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sword_attack_sneak2"));
         falling = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "falling"));
+        falling_mace = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "falling_mace"));
         blank_loop = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "blank_loop"));
         elytra = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "elytra"));
         eating_right = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating_right"));
@@ -196,6 +218,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         idle_climbing = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_climbing"));
         idle_climbing_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_climbing_sneak"));
         climbing_backwards = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "climbing_backwards"));
+        mace = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "mace"));
         pickaxe = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe"));
         pickaxe_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_sneak"));
         minecart_idle = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "minecart_idle"));
@@ -499,7 +522,12 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick(CallbackInfo ci) {
         animate();
+        if(getAfterAttackTicks() > 0) {
+            this.afterAttackTicks--;
+        }
     }
+
+
 
     /*AdjustmentModifier ShieldModifier = new AdjustmentModifier((partName) -> {
         float rotationX = 0;
@@ -856,8 +884,15 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
         //falling
         if (vy < -0.6 && !hasVehicle() && !isOnGround()) {
-            currentAnimation = falling;
-            currentAnimationId = "falling";
+
+            if(getMainHandStack().getItem() instanceof MaceItem ) {
+                currentAnimation = falling_mace;
+                currentAnimationId = "falling_mace";
+            } else {
+                currentAnimation = falling;
+                currentAnimationId = "falling";
+            }
+
             if (!config.getFalling().enabled) {
                 disableAnimation();
             }
@@ -1216,8 +1251,16 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 //shovel
             } else if (getMainHandStack().getItem() instanceof ShovelItem && preferredHand.equals(MAIN_HAND)) {
                 loopedToolAnimation(shovel, shovel_sneak, "shovel", config.getShovel(), 1, 1.5f, 0);
+                //mace
+            } else if (getMainHandStack().getItem() instanceof MaceItem && preferredHand.equals(MAIN_HAND)) {
+                loopedToolAnimation(mace, mace, "mace", config.getAxe(), 3, 1.5f, 0);
 
-            } else {
+            } else if (afterAttackTicks > 0) {
+                loopedToolAnimation(punch, punch, "punch", config.getAxe(), 1, 1.5f, 0);
+            }
+            else {
+
+
                 genericHandswing();
             }
         }

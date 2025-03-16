@@ -25,7 +25,7 @@
     "client": [
     ],
     "modmenu": [
-      "net.gekidolukas.sincereplayeranimations.config.ModConfigConfig"
+      "net.gekidolukas.sincereplayeranimations.config.ModMenuConfig"
     ]
   },
   "mixins": [

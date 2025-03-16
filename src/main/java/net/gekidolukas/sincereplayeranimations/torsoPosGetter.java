@@ -27,5 +27,11 @@ public interface torsoPosGetter {
 
     void armPosOff(BipedEntityModel.ArmPose pos);
 
+
+    int afterAttackTicks = 0;
+
+    void setAfterAttackTicks(int ticks);
+
+    int getAfterAttackTicks();
 }
 
