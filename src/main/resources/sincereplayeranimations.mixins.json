@@ -4,6 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "CapeRenderMixin",
+    "LivingEntityMixin",
+    "PlayerEntityMixin",
     "NEA.fullbody.NEACrawlingMixin",
     "NEA.fullbody.NEAFallingMixin",
     "NEA.fullbody.NEAFreezingMixin",
@@ -20,7 +22,10 @@
     "NEA.hands.NEAPetMixin"
   ],
   "client": [
+    "ClientPlayNetworkHandlerMixin",
+    "ClientWorldMixin",
     "ElytraEntityModelMixin",
+    "ItemRendererMixin",
     "MinecraftClientMixin",
     "PlayerEntityRendererMixin",
     "SeriousPlayerAnimationsMixin"

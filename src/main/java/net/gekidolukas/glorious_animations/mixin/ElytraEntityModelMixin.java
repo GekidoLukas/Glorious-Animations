@@ -1,7 +1,7 @@
 package net.gekidolukas.glorious_animations.mixin;
 
 import dev.kosmx.playerAnim.core.util.Vec3f;
-import net.gekidolukas.glorious_animations.torsoPosGetter;
+import net.gekidolukas.glorious_animations.interfaces.torsoPosGetter;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.model.AnimalModel;

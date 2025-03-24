@@ -7,8 +7,8 @@ import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import static net.gekidolukas.glorious_animations.GloriousAnimations.MOD_ID;
 
 @Config(name = MOD_ID)
-public class ConfigWrapper extends PartitioningSerializer.GlobalData {
+public class OldConfigWrapper extends PartitioningSerializer.GlobalData {
     @ConfigEntry.Category("client")
     @ConfigEntry.Gui.TransitiveObject
-    public ClientConfig client = new ClientConfig();
+    public OldClientConfig client = new OldClientConfig();
 }

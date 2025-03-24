@@ -1,4 +1,4 @@
-package net.gekidolukas.glorious_animations;
+package net.gekidolukas.glorious_animations.interfaces;
 
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
@@ -28,10 +28,5 @@ public interface torsoPosGetter {
     void armPosOff(BipedEntityModel.ArmPose pos);
 
 
-    int afterAttackTicks = 0;
-
-    void setAfterAttackTicks(int ticks);
-
-    int getAfterAttackTicks();
 }
 

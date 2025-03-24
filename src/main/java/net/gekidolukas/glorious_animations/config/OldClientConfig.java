@@ -7,7 +7,9 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 
 @Config(name = "client")
-public class ClientConfig implements ConfigData {
+public class OldClientConfig implements ConfigData {
+
+
 
     @ConfigEntry.Gui.Tooltip
     public float animationSpeedMultiplier = 1;

@@ -13,13 +13,16 @@ import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
 import net.gekidolukas.glorious_animations.IExampleAnimatedPlayer;
 import net.gekidolukas.glorious_animations.compat.*;
-import net.gekidolukas.glorious_animations.config.ClientConfig;
-import net.gekidolukas.glorious_animations.torsoPosGetter;
+import net.gekidolukas.glorious_animations.config.GloriousAnimConfig;
+import net.gekidolukas.glorious_animations.interfaces.SwingTypeGetter;
+import net.gekidolukas.glorious_animations.interfaces.torsoPosGetter;
 import net.minecraft.block.*;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.SkeletonHorseEntity;
 import net.minecraft.entity.mob.ZombieHorseEntity;
 import net.minecraft.entity.passive.DonkeyEntity;
@@ -34,6 +37,7 @@ import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.joml.Vector3f;
@@ -45,6 +49,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -74,6 +79,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     
     private final ModifierLayer<IAnimation> modAnimationContainer2 = new ModifierLayer<>();
 
+    private final ModifierLayer<IAnimation> modPassiveAnimationContainer = new ModifierLayer<>();
+
     public SeriousPlayerAnimationsMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
         super(world, pos, yaw, gameProfile);
     }
@@ -90,17 +97,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
     private int sprintTicks = 0;
 
-    private int afterAttackTicks = 0;
 
-    @Override
-    public int getAfterAttackTicks() {
-        return this.afterAttackTicks;
-    }
 
-    @Override
-    public void setAfterAttackTicks(int ticks) {
-        this.afterAttackTicks = ticks;
-    }
+
+
 
     //region Animation Variables
     public KeyframeAnimation punch = null;
@@ -123,6 +123,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     public KeyframeAnimation falling_mace = null;
     public KeyframeAnimation blank_loop = null;
     public KeyframeAnimation elytra = null;
+    public KeyframeAnimation totem_revive = null;
+    public KeyframeAnimation trident_throw = null;
+    public KeyframeAnimation lantern_hold = null;
+    public KeyframeAnimation lantern_hold_two_hands = null;
     public KeyframeAnimation eating_right = null;
     public KeyframeAnimation eating_left = null;
     public KeyframeAnimation eating_right_sneak = null;
@@ -141,8 +145,12 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     public KeyframeAnimation climbing_sneak = null;
     public KeyframeAnimation climbing_backwards = null;
     public KeyframeAnimation mace = null;
-    public KeyframeAnimation pickaxe = null;
-    public KeyframeAnimation pickaxe_sneak = null;
+    public KeyframeAnimation pickaxe_attack = null;
+    public KeyframeAnimation pickaxe_attack_sneak = null;
+    public KeyframeAnimation pickaxe_break = null;
+    public KeyframeAnimation pickaxe_break_sneak = null;
+    public KeyframeAnimation drop_item = null;
+    public KeyframeAnimation drop_item_sneak = null;
     public KeyframeAnimation minecart_idle = null;
     public KeyframeAnimation minecart_pickaxe = null;
     public KeyframeAnimation horse_idle = null;
@@ -156,6 +164,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     public KeyframeAnimation sleeping = null;
     public KeyframeAnimation axe = null;
     public KeyframeAnimation axe_sneak = null;
+    public KeyframeAnimation axe_break = null;
+    public KeyframeAnimation axe_break_sneak = null;
     public KeyframeAnimation shovel = null;
     public KeyframeAnimation shovel_sneak = null;
     public KeyframeAnimation paraglider = null;
@@ -179,6 +189,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     
     public KeyframeAnimation currentAnimation = null;
     public KeyframeAnimation currentOverlay = null;
+    public KeyframeAnimation passiveOverlay = null;
+
     public KeyframeAnimation prevAnimation = null;
     public KeyframeAnimation.AnimationBuilder builder = null;
 
@@ -209,6 +221,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         falling_mace = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "falling_mace"));
         blank_loop = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "blank_loop"));
         elytra = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "elytra"));
+        totem_revive = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "totem_revive"));
+        trident_throw = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "trident_throw"));
+        lantern_hold = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "lantern_hold"));
+        lantern_hold_two_hands = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "lantern_hold_two_hands"));
         eating_right = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating_right"));
         eating_left = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating_left"));
         eating_right_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating_right_sneak"));
@@ -227,8 +243,12 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         idle_climbing_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_climbing_sneak"));
         climbing_backwards = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "climbing_backwards"));
         mace = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "mace"));
-        pickaxe = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe"));
-        pickaxe_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_sneak"));
+        pickaxe_attack = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_attack"));
+        pickaxe_attack_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_attack_sneak"));
+        pickaxe_break = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_break"));
+        pickaxe_break_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_break_sneak"));
+        drop_item = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "drop_item"));
+        drop_item_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "drop_item_sneak"));
         minecart_idle = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "minecart_idle"));
         minecart_pickaxe = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "minecart_pickaxe"));
         horse_idle = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "horse_idle"));
@@ -242,6 +262,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         sleeping = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sleeping"));
         axe = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "axe"));
         axe_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "axe_sneak"));
+        axe_break = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "axe_break"));
+        axe_break_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "axe_break_sneak"));
         shovel = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "shovel"));
         shovel_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "shovel_sneak"));
         paraglider = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "paraglider"));
@@ -252,6 +274,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
     }
+
 
 
     @Inject(method = "<init>", at = @At(value = "RETURN"))
@@ -270,6 +293,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         modAnimationContainer2.addModifierLast(LeftBowModifier);
         LeftBowModifier.enabled = false;
 
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(3, modPassiveAnimationContainer);
+
+        modPassiveAnimationContainer.addModifierLast(PassiveOverlayMirrorModifier);
+
         //modAnimationContainer2.addModifierLast(ShieldModifier);
         //ShieldModifier.enabled = false;
 
@@ -287,6 +314,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         reloadAnimationVariables();
         currentAnimation = idle_standing;
         currentOverlay = blank_loop;
+        passiveOverlay = blank_loop;
 
 
     }
@@ -346,13 +374,19 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
     int fadeTime = 0;
     int overlayFadeTime = 0;
+    int passiveOverlayFadeTime = 0;
     float overlayAnimationSpeed = 1;
+    float passiveOverlayAnimationSpeed = 1;
     int overlayPriority = 0;
     int prevOverlayPriority = 0;
+    int passiveOverlayPriority = 0;
+    int prevPassiveOverlayPriority = 0;
     String currentAnimationId = "";
     String prevAnimationId = "";
     String currentOverlayId = "";
     String prevOverlayId = "";
+    String currentPassiveOverlayId = "";
+    String prevPassiveOverlayId = "";
     boolean modified = false;
     float animationSpeed = 1;
     float byaw = 0;
@@ -496,11 +530,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         currentOverlayId = "blank_loop";
     }
 
-    public void loopedToolAnimation(KeyframeAnimation overlay, KeyframeAnimation overlay_sneak, String id, ClientConfig.AnimationConfig getconfig, int fade, float speed, int priority) {
-        if (getconfig.enabled) {
+    public void loopedToolAnimation(KeyframeAnimation overlay, KeyframeAnimation overlay_sneak, String id, int fade, float speed, int priority) {
 
             overlayFadeTime = fade;
-            overlayAnimationSpeed = speed * getconfig.speedMultiplier;
+            overlayAnimationSpeed = speed;
             overlayPriority = priority;
             OverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
 
@@ -512,9 +545,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 currentOverlayId = id;
             }
 
-        } else {
-            genericHandswing();
-        }
 
     }
 
@@ -536,9 +566,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick(CallbackInfo ci) {
         animate();
-        if(getAfterAttackTicks() > 0) {
-            this.afterAttackTicks--;
-        }
+
         if(sprintTicks > 0) {
             this.sprintTicks--;
         }
@@ -686,12 +714,16 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     SpeedModifier AnimationSpeedModifier = new SpeedModifier();
 
     MirrorModifier OverlayMirrorModifier = new MirrorModifier();
+    MirrorModifier PassiveOverlayMirrorModifier = new MirrorModifier();
     MirrorModifier AnimationMirrorModifier = new MirrorModifier();
 
     ModifierLayer<IAnimation> animationContainer = modAnimationContainer;
     ModifierLayer<IAnimation> animationContainer2 = modAnimationContainer2;
+    ModifierLayer<IAnimation> passiveAnimationContainer = modPassiveAnimationContainer;
 
     public void animate() {
+        AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) (Object)this;
+
         animationTick++;
 
         if (getMainArm() == Arm.LEFT) {
@@ -703,8 +735,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         }
 
 
-        AnimationSpeedModifier.speed = animationSpeed * config.animationSpeedMultiplier;
-        OverlaySpeedModifier.speed = overlayAnimationSpeed * config.animationSpeedMultiplier;
+        AnimationSpeedModifier.speed = animationSpeed;
+        OverlaySpeedModifier.speed = overlayAnimationSpeed;
 
         byaw = bodyYaw;
         hyaw = headYaw;
@@ -731,7 +763,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         crouched = isInSneakingPose();
 
         vyfly = Math.round(vy * 1000.0) / 1000.0;
-        if ((vyfly == 0.0 || Math.abs(vyfly) == 0.375) && !isOnGround() && !isInsideWaterOrBubbleColumn()) {
+        if ((vyfly == 0.0 || Math.abs(vyfly) == 0.375 || player.getAbilities().flying) && !isOnGround() && !isInsideWaterOrBubbleColumn()) {
             flychecker++;
         } else if (Math.abs(vyfly) > 0.375 || isOnGround()) {
             flychecker = 0;
@@ -752,7 +784,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             if(!crouched) {
                 if(!isMovingBackwards) {
                     // Sprinting
-                    if(isStillSprinting() && moveSpeed > 0.23)
+                    if(isStillSprinting() || moveSpeed > 0.23)
                     {
 
                         if (((3 / 0.28) * moveSpeed) > 1) {
@@ -765,7 +797,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                         if (!config.getRunning().enabled) {
                             disableAnimation();
                         }
-                        fadeTime = 2;
+                        fadeTime = 5;
                         priority = 0;
 
                     }
@@ -827,18 +859,22 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 // Walking Backwards
                 else
                 {
-                    if (((3 / 0.28) * moveSpeed) > 1) {
-                        animationSpeed = (float) ((3 / 0.28) * moveSpeed * config.getRunning().speedMultiplier);
+                    if (((4 / 0.22) * moveSpeed) > 1) {
+                        animationSpeed = (float) ((4 / 0.22) * moveSpeed * config.getWalkingBackwards().speedMultiplier);
                     } else {
-                        animationSpeed = 1 * config.getRunning().speedMultiplier;
+                        animationSpeed = 2 * config.getWalkingBackwards().speedMultiplier;
                     }
-                    currentAnimation = running;
-                    currentAnimationId = "running";
-                    if (!config.getRunning().enabled) {
+                    if (vy > 0) {
+                        animationSpeed = 0.1F;
+                    }
+                    currentAnimation = walking_backwards;
+                    currentAnimationId = "walking_backwards";
+                    if (!config.getWalkingBackwards().enabled) {
                         disableAnimation();
                     }
-                    fadeTime = 2;
+                    fadeTime = 7;
                     priority = 0;
+
                 }
             }
             else {
@@ -904,151 +940,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         }
 
 
-        //region Old Walking
-
-//        //walking
-//        if (!isStillSprinting() && moveSpeed < 0.23 && moveSpeed > 0 && !isMovingBackwards && !crouched) {
-////            if (((9 / 0.22) * moveSpeed) > 1) {
-////                animationSpeed = (float) ((9 / 0.22) * moveSpeed * config.getWalking().speedMultiplier);
-////            } else {
-////                animationSpeed = 2 * config.getWalking().speedMultiplier;
-////            }
-////            currentAnimation = walking;
-////            currentAnimationId = "walking";
-////            LOGGER.info("Walking");
-////            if (!config.getWalking().enabled) {
-////                disableAnimation();
-////            }
-////            fadeTime = 7;
-////            priority = 0;
-//
-//            //walking backwards
-//        } else if (isMovingBackwards && !crouched) {
-////            if (((4 / 0.22) * moveSpeed) > 1) {
-////                animationSpeed = (float) ((4 / 0.22) * moveSpeed * config.getWalkingBackwards().speedMultiplier);
-////            } else {
-////                animationSpeed = 2 * config.getWalkingBackwards().speedMultiplier;
-////            }
-////            if (vy > 0) {
-////                animationSpeed = 0.1F;
-////            }
-////            currentAnimation = walking_backwards;
-////            currentAnimationId = "walking_backwards";
-////            if (!config.getWalkingBackwards().enabled) {
-////                disableAnimation();
-////            }
-////            fadeTime = 7;
-////            priority = 0;
-//
-//            //running
-//        } else
-//            if (moveSpeed > 0.23 && isStillSprinting() && !isMovingBackwards && !crouched) {
-////                if (((3 / 0.28) * moveSpeed) > 1) {
-////                    animationSpeed = (float) ((3 / 0.28) * moveSpeed * config.getRunning().speedMultiplier);
-////                } else {
-////                    animationSpeed = 1 * config.getRunning().speedMultiplier;
-////                }
-////                currentAnimation = running;
-////                currentAnimationId = "running";
-////                if (!config.getRunning().enabled) {
-////                    disableAnimation();
-////                }
-////                fadeTime = 2;
-////                priority = 0;
-//
-//
-//            //standing & turning
-//        } else if (moveSpeed == 0 && !crouched) {
-//
-////            if (turn != 0) {
-////                currentAnimation = (turn < 0) ? turn_left : turn_right;
-////                currentAnimationId = (turn < 0) ? "turn_left" : "turn_right";
-////                priority = 0;
-////
-////                if (!config.getTurningStanding().enabled) {
-////                    disableAnimation();
-////                }
-////                if ((abs((((float) 1 / 2) * turn)) > 5)) {
-////                    animationSpeed = 2f * config.getTurningStanding().speedMultiplier;
-////                } else {
-////                    animationSpeed = abs((((float) 1 / 2) * turn) * config.getTurningStanding().speedMultiplier);
-////                }
-////
-////            } else {
-////                currentAnimation = idle_standing;
-////                currentAnimationId = "idle_standing";
-////                if (!config.getIdleStanding().enabled) {
-////                    disableAnimation();
-////                }
-////                if (prevAnimationId.equals("idle_sneak")
-////                        || prevAnimationId.equals("walking_sneak")
-////                        || prevAnimationId.equals("jump")
-////                ) {
-////
-////                    fadeTime = 1;
-////                } else {
-////                    fadeTime = 10;
-////                }
-////                animationSpeed = config.getIdleStanding().speedMultiplier;
-////
-////                priority = 0;
-////            }
-//
-//            //sneaking
-//        } else
-//            if (crouched && moveSpeed == 0 && !isMovingBackwards) {
-////            currentAnimation = idle_sneak;
-////            currentAnimationId = "idle_sneak";
-////            if (!config.getIdleSneaking().enabled) {
-////                disableAnimation();
-////            }
-////            animationSpeed = 1 * config.getIdleSneaking().speedMultiplier;
-////
-////            if (prevAnimationId.equals("walking_sneak") || prevAnimationId.equals("walking_sneak_backwards")) {
-////                fadeTime = 10;
-////            } else {
-////                fadeTime = 1;
-////            }
-////            priority = 0;
-//        } else if (crouched && moveSpeed > 0 && !isMovingBackwards) {
-////            currentAnimation = walking_sneak;
-////            currentAnimationId = "walking_sneak";
-////            if (!config.getIdleSneaking().enabled) {
-////                disableAnimation();
-////            }
-////            animationSpeed = (float) ((2 / 0.06) * moveSpeed * config.getWalkingSneak().speedMultiplier);
-////            if (animationSpeed < 1) {
-////                animationSpeed = 1 * config.getWalkingSneak().speedMultiplier;
-////            }
-////            if (prevAnimationId.equals("idle_sneak") || prevAnimationId.equals("walking_sneak_backwards")) {
-////                fadeTime = 7;
-////            } else {
-////                fadeTime = 1;
-////            }
-////            priority = 0;
-//
-//            }
-//            else if (crouched && moveSpeed > 0) {
-////            currentAnimation = walking_sneak_backwards;
-////            currentAnimationId = "walking_sneak_backwards";
-////            if (!config.getWalkingSneakBackwards().enabled) {
-////                disableAnimation();
-////            }
-////            animationSpeed = (float) ((2 / 0.06) * moveSpeed * config.getWalkingSneakBackwards().speedMultiplier);
-////            if (animationSpeed < 1) {
-////                animationSpeed = 1 * config.getWalkingSneakBackwards().speedMultiplier;
-////            }
-////            if (prevAnimationId.equals("idle_sneak")
-////                    || prevAnimationId.equals("walking_sneak")) {
-////                fadeTime = 7;
-////            } else {
-////                fadeTime = 1;
-////            }
-////            priority = 0;
-//
-//        }
-
-        //endregion
 
 
         //jumping
@@ -1057,19 +948,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             priority = 0;
         }
 
-        //flying
-
-
-//        if (flychecker > 10) {
-//            currentAnimation = idle_creative_flying;
-//            currentAnimationId = "idle_creative_flying";
-//            if (!config.getIdleCreativeFlying().enabled) {
-//                disableAnimation();
-//            }
-//            fadeTime = 5;
-//            animationSpeed = config.getIdleCreativeFlying().speedMultiplier;
-//            priority = 0;
-//        }
 
 
         //falling
@@ -1298,8 +1176,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 animationSpeed = 1 * config.getIdleInWater().speedMultiplier;
                 priority = 0;
             }
-        } else
-            if (isInsideWaterOrBubbleColumn() && isInSwimmingPose()) {
+        }
+        else if (isInsideWaterOrBubbleColumn() && isInSwimmingPose()) {
             currentAnimation = swimming;
             currentAnimationId = "swimming";
             if (!config.getSwimming().enabled) {
@@ -1375,9 +1253,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             }
         }
 
-
-
-
         //elytra
         if (isFallFlying()) {
             currentAnimation = elytra;
@@ -1388,71 +1263,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             animationSpeed = 1 * config.getElytra().speedMultiplier;
             priority = 0;
             fadeTime = 5;
-        }
-
-
-
-        //handswinging
-        if(handSwinging) {
-            //sword attack
-
-            if ((getMainHandStack().getItem() instanceof SwordItem || getMainHandStack().getItem() instanceof TridentItem)&& !isUsingItem() && preferredHand.equals(MAIN_HAND)) {
-                overlayAnimationSpeed = 1.4f * config.getSwordAttack().speedMultiplier;
-
-                overlayFadeTime = 0;
-                overlayPriority = 1;
-
-                OverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
-
-                if (swordSeq) {
-
-                    if (crouched) {
-                        currentOverlay = sword_attack_sneak;
-                        currentOverlayId = "sword_attack_sneak";
-                    } else {
-                        currentOverlay = sword_attack;
-                        currentOverlayId = "sword_attack";
-                    }
-
-
-                } else {
-                    if (crouched) {
-                        currentOverlay = sword_attack_sneak2;
-                        currentOverlayId = "sword_attack_sneak";
-                    } else {
-                        currentOverlay = sword_attack2;
-                        currentOverlayId = "sword_attack";
-                    }
-
-                }
-
-                if (!config.getSwordAttack().enabled) {
-                    disableOverlay();
-                    genericHandswing();
-                }
-
-
-                //pickaxe
-            } else if (getMainHandStack().getItem() instanceof PickaxeItem && preferredHand.equals(MAIN_HAND)) {
-                loopedToolAnimation(pickaxe, pickaxe_sneak, "pickaxe", config.getPickaxe(), 1, 2, 0);
-                //axe
-            } else if (getMainHandStack().getItem() instanceof AxeItem && preferredHand.equals(MAIN_HAND)) {
-                loopedToolAnimation(axe, axe_sneak, "axe", config.getAxe(), 1, 1.5f, 0);
-                //shovel
-            } else if (getMainHandStack().getItem() instanceof ShovelItem && preferredHand.equals(MAIN_HAND)) {
-                loopedToolAnimation(shovel, shovel_sneak, "shovel", config.getShovel(), 1, 1.5f, 0);
-                //mace
-            } else if (!hasVehicle() && !isOnGround() && getMainHandStack().getItem() instanceof MaceItem && preferredHand.equals(MAIN_HAND)) {
-                loopedToolAnimation(mace, mace, "mace", config.getAxe(), 3, 1.5f, 0);
-
-            } else if (afterAttackTicks > 0) {
-                loopedToolAnimation(punch, punch, "punch", config.getAxe(), 1, 1.5f, 0);
-            }
-            else {
-
-
-                genericHandswing();
-            }
         }
 
         //sleeping
@@ -1469,7 +1279,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 disableOverlay();
             }
         }
-
 
         if (isUsingItem()) {
             activeItem = getActiveItem().getItem();
@@ -1506,7 +1315,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 }
 
             } else
-                if (isUsingSpyglass()) {
+            if (isUsingSpyglass()) {
                 //spyglass
                 if (getActiveHand().equals(MAIN_HAND)) {
                     disableMainArmB = true;
@@ -1518,7 +1327,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 fadeTime = 1;
                 priority = 0;
             } else
-                if (activeItem instanceof TridentItem) {
+            if (activeItem instanceof TridentItem) {
                 //trident
                 if (config.getTrident().enabled){
                     overlayFadeTime = 5;
@@ -1561,7 +1370,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
             } else
-                if (activeItem instanceof BrushItem) {
+            if (activeItem instanceof BrushItem) {
                 //brush
                 if (getActiveHand().equals(MAIN_HAND)) {
                     disableMainArmB = true;
@@ -1574,7 +1383,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
                 priority = 0;
             } else
-                if (activeItem instanceof GoatHornItem) {
+            if (activeItem instanceof GoatHornItem) {
                 //goat horn
                 if (getActiveHand().equals(MAIN_HAND)) {
                     disableMainArmB = true;
@@ -1586,7 +1395,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 fadeTime = 1;
                 priority = 0;
             } else
-                if (activeItem instanceof BowItem) {
+            if (activeItem instanceof BowItem) {
                 //bow
                 if (hasVehicle() || isCrawling() || !config.getBow().enabled) {
                     disableRightArm();
@@ -1644,7 +1453,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
             } else
-                if (activeItem instanceof ShieldItem) {
+            if (activeItem instanceof ShieldItem) {
                 //shield
                 if (config.getShield().enabled) {
                     overlayFadeTime = 5;
@@ -1692,7 +1501,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
             } else
-                if (activeItem instanceof CrossbowItem) {
+            if (activeItem instanceof CrossbowItem) {
                 //crossbow
                 disableArms = true;
 
@@ -1700,7 +1509,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 //modifyId = "crossbow_charging";
                 //priority = 0;
             } else
-                if (SUPPLEMENTARIES_COMPAT) {
+            if (SUPPLEMENTARIES_COMPAT) {
                 //flute
                 if (SupplementariesFluteCheck.check(activeItem)){
                     disableArms = true;
@@ -1725,8 +1534,211 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         }
 
 
-        //region Mod Compats
+        //totem
+        if (((SwingTypeGetter)player).getTotemTicks() > 0) {
+            currentAnimation = totem_revive;
+            currentAnimationId = "totem_revive";
 
+            animationSpeed = 1;
+            priority = 0;
+            fadeTime = 5;
+        }
+
+
+
+
+        //handswinging
+        if(handSwinging) {
+
+            List<ItemEntity> itemEntities = getNearbyItemEntities(player.getPos(),16.0d);
+
+            for(var item : itemEntities) {
+                Vec3d eyePos = player.getEyePos();
+                double distance = item.getPos().distanceTo(eyePos);
+                double speed = player.getVelocity().length();
+                if(distance < speed * 10 + 1 && item.getItemAge() < 4) {
+                    ((SwingTypeGetter)player).setDropTicks(10);
+                }
+            }
+            //TODO Distinguish between using, Attacking and breaking Block
+
+            if(((SwingTypeGetter)player).getDropTicks() > 0) {
+                loopedToolAnimation(drop_item, drop_item_sneak, "drop_item", 1, 1, 0);
+            }
+            else if(((SwingTypeGetter)player).getBlockBreakingTicks() > 0) {
+
+                //sword break
+                if (GloriousAnimConfig.hasSwordBreakAnimation(getMainHandStack().getItem()) && !isUsingItem() && preferredHand.equals(MAIN_HAND)) {
+                    overlayAnimationSpeed = 1.4f * config.getSwordAttack().speedMultiplier;
+
+                    overlayFadeTime = 0;
+                    overlayPriority = 1;
+
+                    OverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
+
+                    if (swordSeq) {
+
+                        if (crouched) {
+                            currentOverlay = sword_attack_sneak;
+                            currentOverlayId = "sword_attack_sneak";
+                        } else {
+                            currentOverlay = sword_attack;
+                            currentOverlayId = "sword_attack";
+                        }
+
+
+                    } else {
+                        if (crouched) {
+                            currentOverlay = sword_attack_sneak2;
+                            currentOverlayId = "sword_attack_sneak";
+                        } else {
+                            currentOverlay = sword_attack2;
+                            currentOverlayId = "sword_attack";
+                        }
+
+                    }
+
+                    if (!config.getSwordAttack().enabled) {
+                        disableOverlay();
+                        genericHandswing();
+                    }
+
+
+                }
+                //pickaxe
+                else if (GloriousAnimConfig.hasPickaxeBreakAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(pickaxe_break, pickaxe_break_sneak, "pickaxe_break", 1, 2, 0);
+                }
+                //axe break
+                else if (GloriousAnimConfig.hasAxeBreakAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(axe_break, axe_break_sneak, "axe_break", 1, 1.5f, 0);
+                }
+                //shovel
+                else if (GloriousAnimConfig.hasShovelBreakAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(shovel, shovel_sneak, "shovel",  1, 1.5f, 0);
+                }
+                //hoe
+                else if (GloriousAnimConfig.hasHoeBreakAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(shovel, shovel_sneak, "hoe",  1, 1.5f, 0); //TODO ADD
+                }
+                else {
+                    genericHandswing();
+                }
+            }
+            else {
+                //sword attack
+                if (GloriousAnimConfig.hasSwordAttackAnimation(getMainHandStack().getItem()) && !isUsingItem() && preferredHand.equals(MAIN_HAND)) {
+                    overlayAnimationSpeed = 1.4f * config.getSwordAttack().speedMultiplier;
+
+                    overlayFadeTime = 0;
+                    overlayPriority = 1;
+
+                    OverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
+
+                    if (swordSeq) {
+
+                        if (crouched) {
+                            currentOverlay = sword_attack_sneak;
+                            currentOverlayId = "sword_attack_sneak";
+                        } else {
+                            currentOverlay = sword_attack;
+                            currentOverlayId = "sword_attack";
+                        }
+
+
+                    } else {
+                        if (crouched) {
+                            currentOverlay = sword_attack_sneak2;
+                            currentOverlayId = "sword_attack_sneak";
+                        } else {
+                            currentOverlay = sword_attack2;
+                            currentOverlayId = "sword_attack";
+                        }
+
+                    }
+
+                    if (!config.getSwordAttack().enabled) {
+                        disableOverlay();
+                        genericHandswing();
+                    }
+
+
+                }
+                //pickaxe
+                else if (GloriousAnimConfig.hasPickaxeAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(pickaxe_attack, pickaxe_attack_sneak, "pickaxe_attack", 1, 2, 0);
+                }
+                //axe
+                else if (GloriousAnimConfig.hasAxeAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(axe, axe_sneak, "axe_attack", 1, 1.5f, 0);
+                }
+                //shovel
+                else if (GloriousAnimConfig.hasShovelAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(shovel, shovel_sneak, "shovel",  1, 1.5f, 0);
+                }
+                //hoe
+                else if (GloriousAnimConfig.hasHoeAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(shovel, shovel_sneak, "hoe",  1, 1.5f, 0); //TODO ADD
+                }
+                //mace
+                else if (GloriousAnimConfig.hasMaceAttackAnimation(getMainHandStack().getItem()) && !hasVehicle() && !isOnGround() &&  preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(mace, mace, "mace",  3, 1.5f, 0);
+
+                }
+                else if (GloriousAnimConfig.hasPunchAttackAnimation(getMainHandStack().getItem())) {
+                    loopedToolAnimation(punch, punch, "punch",  1, 1.5f, 0);
+                }
+                else {
+                    genericHandswing();
+                }
+            }
+
+
+        }
+
+
+        //trident_throw
+        if (((SwingTypeGetter)player).getPostTridentThrowTicks() > 0) {
+            currentOverlay = trident_throw;
+            currentOverlayId = "trident_throw";
+
+            overlayAnimationSpeed = 2.0f;
+            overlayPriority = 0;
+            overlayFadeTime = 5;
+        }
+
+        //Lantern
+//TODO Second Overlay for passive actions like holding
+        if(GloriousAnimConfig.isLanternItem(player.getOffHandStack().getItem()) && GloriousAnimConfig.isLanternItem(player.getMainHandStack().getItem())) {
+            passiveOverlay = lantern_hold_two_hands;
+            currentPassiveOverlayId = "lantern_hold_two_hands";
+
+
+
+            passiveOverlayAnimationSpeed = 1.0f;
+            passiveOverlayPriority = 0;
+            passiveOverlayFadeTime = 5;
+        } else if(GloriousAnimConfig.isLanternItem(player.getMainHandStack().getItem())) {
+            passiveOverlay = lantern_hold;
+            currentPassiveOverlayId = "lantern_hold";
+            PassiveOverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
+
+            passiveOverlayAnimationSpeed = 1.0f;
+            passiveOverlayPriority = 0;
+            passiveOverlayFadeTime = 5;
+        } else if(GloriousAnimConfig.isLanternItem(player.getOffHandStack().getItem())) {
+            passiveOverlay = lantern_hold;
+            currentPassiveOverlayId = "lantern_hold";
+            OverlayMirrorModifier.setEnabled(rightHand == MAIN_HAND);
+
+
+            passiveOverlayAnimationSpeed = 1.0f;
+            passiveOverlayPriority = 0;
+            passiveOverlayFadeTime = 5;
+        }
+
+
+        //region Mod Compats
         if (!getMainHandStack().isEmpty()) {
             item = getMainHandStack().getItem();
 
@@ -1816,6 +1828,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
         //endregion
 
+        //region Disable Body Parts
         if (disableRightArmB) {
             disableRightArm();
             disableRightArmB = false;
@@ -1866,9 +1879,12 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             disableAnimationB = false;
         }
 
+        //endregion
 
 
 
+
+        //region Apply Current Animation
         if ((!Objects.equals(currentAnimationId, prevAnimationId) && priority >= prevPriority) || !animationContainer.isActive() || !Objects.equals(modifyId, prevModifyId)) {
 
             animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeTime, INOUTSINE), new KeyframeAnimationPlayer(currentAnimation));
@@ -1885,6 +1901,9 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         prevOnGround = isOnGround();
         prevbyaw = byaw;
 
+        //endregion
+
+        //region Apply Overlay Animation
         if ((!Objects.equals(currentOverlayId, prevOverlayId) && overlayPriority >= prevOverlayPriority) || !animationContainer2.isActive()){
             RightBowModifier.enabled = false;
             LeftBowModifier.enabled = false;
@@ -1916,7 +1935,21 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             prevOverlayId = currentOverlayId;
             prevOverlayPriority = overlayPriority;
         }
+        //endregion
 
+        passiveAnimationContainer.setAnimation(null);
+        //region Apply Passive Overlay Animation
+        if ((!Objects.equals(currentPassiveOverlayId, prevPassiveOverlayId) && passiveOverlayPriority >= prevPassiveOverlayPriority) || !passiveAnimationContainer.isActive()){
+
+            passiveAnimationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(passiveOverlayFadeTime, INOUTSINE), new KeyframeAnimationPlayer(passiveOverlay));
+
+
+            prevPassiveOverlayId = currentPassiveOverlayId;
+            prevPassiveOverlayPriority = passiveOverlayPriority;
+        }
+        //endregion
+
+        //region Write TorsoPos
         if (animationContainer.isActive()){
             torso2 = animationContainer2.get3DTransform("torso", POSITION, 0, zero);
             if (torso2.getZ() == 0 && torso2.getY() == 0) {
@@ -1933,14 +1966,26 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             }
 
         }
-
-        //LOGGER.info("ROTATION: " + animationContainer2.get3DTransform("rightItem", ROTATION, 0, zero));
-
-        //LOGGER.info("POSITION: " + animationContainer2.get3DTransform("rightItem", POSITION, 0, zero));
-        //LOGGER.info(String.valueOf(armPosMain));
-        //LOGGER.info(String.valueOf(armPosOff));
+        //endregion
 
 
+
+    }
+
+    @Unique
+    private static List<ItemEntity> getNearbyItemEntities(Vec3d playerPos, double radius) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null) return List.of();
+
+        ClientWorld world = client.world;
+
+        Box searchBox = new Box(
+                playerPos.x - radius, playerPos.y - radius, playerPos.z - radius,
+                playerPos.x + radius, playerPos.y + radius, playerPos.z + radius
+        );
+
+        List<ItemEntity> items = world.getEntitiesByClass(ItemEntity.class, searchBox, item -> true);
+        return items;
     }
 
 

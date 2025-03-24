@@ -1,0 +1,31 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"trident_throw": {
+			"loop": true,
+			"bones": {
+				"leftArm": {
+					"rotation": {
+						"vector": [54.34766, -53.70598, -21.63871]
+					},
+					"position": {
+						"vector": [0, 0, 4]
+					}
+				},
+				"rightArm": {
+					"rotation": {
+						"vector": [-87.45902, -46.77021, -11.83002]
+					},
+					"position": {
+						"vector": [0, 0, -3]
+					}
+				},
+				"torso": {
+					"rotation": {
+						"vector": [0, -45, 0]
+					}
+				}
+			}
+		}
+	}
+}
