@@ -97,6 +97,8 @@ public class CommonAnimations {
     public static KeyframeAnimation SWORD_ATTACK_SNEAK_2 = null;
     public static KeyframeAnimation TRIDENT_DRAW = null;
     public static KeyframeAnimation TRIDENT_THROW = null;
+    public static KeyframeAnimation SPEAR_ATTACK = null;
+    public static KeyframeAnimation SPEAR_ATTACK_SNEAK = null;
     public static KeyframeAnimation SHIELD = null;
     public static KeyframeAnimation SHIELD_SNEAK = null;
     public static KeyframeAnimation BOW_IDLE = null;
@@ -221,6 +223,8 @@ public class CommonAnimations {
 
         TRIDENT_DRAW = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "trident_draw"));
         TRIDENT_THROW = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "trident_throw"));
+        SPEAR_ATTACK = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "spear_attack"));
+        SPEAR_ATTACK_SNEAK = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "spear_attack_sneak"));
 
         SHIELD = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "shield"));
         SHIELD_SNEAK = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "shield_sneak"));

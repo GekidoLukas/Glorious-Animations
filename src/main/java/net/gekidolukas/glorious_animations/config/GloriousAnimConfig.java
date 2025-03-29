@@ -92,6 +92,14 @@ public class GloriousAnimConfig extends MidnightConfig {
     }
 
     @Entry(category = ATTACK_ITEMS)
+    public static final List<Identifier> spear_attack_items = Lists.newArrayList(
+            Identifier.ofVanilla("trident")
+    );
+    public static boolean hasSpearAttackAnimation(Item item) {
+        return spear_attack_items.contains(Registries.ITEM.getId(item));
+    }
+
+    @Entry(category = ATTACK_ITEMS)
     public static final List<Identifier> punch_attack_items = Lists.newArrayList(
             Identifier.ofVanilla("air")
     );

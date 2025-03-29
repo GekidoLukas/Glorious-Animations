@@ -1,5 +1,6 @@
 package net.gekidolukas.glorious_animations.mixin;
 
+import net.gekidolukas.glorious_animations.CommonAnimations;
 import net.gekidolukas.glorious_animations.interfaces.SwingTypeGetter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -43,7 +44,7 @@ public class ClientPlayNetworkHandlerMixin {
             if (client.world != null) {
                 AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) packet.getEntity(client.world);
                 if (player != null) {
-                    ((SwingTypeGetter)player).setTotemTicks(10);
+                    ((SwingTypeGetter)player).setTotemTicks(CommonAnimations.TOTEM_REVIVE.getLength() - 10);
                 }
             }
         }

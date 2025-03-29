@@ -1,5 +1,6 @@
 package net.gekidolukas.glorious_animations.mixin;
 
+import net.gekidolukas.glorious_animations.CommonAnimations;
 import net.gekidolukas.glorious_animations.interfaces.SwingTypeGetter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -42,7 +43,7 @@ public class MinecraftClientMixin {
 
         if(player != null && player instanceof ClientPlayerEntity clientPlayerEntity)
         {
-            ((SwingTypeGetter)player).setDropTicks(10);
+            ((SwingTypeGetter)player).setDropTicks(CommonAnimations.DROP_ITEM.getLength());
         }
     }
 

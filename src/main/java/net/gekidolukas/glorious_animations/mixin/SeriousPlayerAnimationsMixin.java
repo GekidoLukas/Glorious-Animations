@@ -13,7 +13,6 @@ import net.gekidolukas.glorious_animations.AdvancedLayer;
 import net.gekidolukas.glorious_animations.CommonAnimations;
 import static net.gekidolukas.glorious_animations.CommonAnimations.*;
 
-import net.gekidolukas.glorious_animations.GloriousAnimations;
 import net.gekidolukas.glorious_animations.IExampleAnimatedPlayer;
 import net.gekidolukas.glorious_animations.compat.*;
 import net.gekidolukas.glorious_animations.config.GloriousAnimConfig;
@@ -89,9 +88,9 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     @Unique
     AdvancedLayer PASSIVE_LAYER = new AdvancedLayer();
     @Unique
-    AdvancedLayer TORCH_LAYER = new AdvancedLayer();
+    AdvancedLayer LEFT_HOLD_LAYER = new AdvancedLayer();
     @Unique
-    AdvancedLayer LANTERN_LAYER = new AdvancedLayer();
+    AdvancedLayer RIGHT_HOLD_LAYER = new AdvancedLayer();
     @Unique
     AdvancedLayer MAIN_LAYER = new AdvancedLayer();
 
@@ -159,22 +158,23 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         PASSIVE_LAYER.animationContainer.addModifierLast(PASSIVE_LAYER.speedModifier);
         PASSIVE_LAYER.mirrorModifier.setEnabled(false);
 
-        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(5, LANTERN_LAYER.animationContainer);
-        LANTERN_LAYER.animationContainer.addModifierLast(LANTERN_LAYER.mirrorModifier);
-        LANTERN_LAYER.animationContainer.addModifierLast(LANTERN_LAYER.speedModifier);
-        LANTERN_LAYER.mirrorModifier.setEnabled(false);
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(5, RIGHT_HOLD_LAYER.animationContainer);
+        RIGHT_HOLD_LAYER.animationContainer.addModifierLast(RIGHT_HOLD_LAYER.mirrorModifier);
+        RIGHT_HOLD_LAYER.animationContainer.addModifierLast(RIGHT_HOLD_LAYER.speedModifier);
+        RIGHT_HOLD_LAYER.mirrorModifier.setEnabled(false);
 
-        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(6, TORCH_LAYER.animationContainer);
-        TORCH_LAYER.animationContainer.addModifierLast(TORCH_LAYER.mirrorModifier);
-        TORCH_LAYER.animationContainer.addModifierLast(TORCH_LAYER.speedModifier);
-        TORCH_LAYER.mirrorModifier.setEnabled(false);
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(6, LEFT_HOLD_LAYER.animationContainer);
+        LEFT_HOLD_LAYER.animationContainer.addModifierLast(LEFT_HOLD_LAYER.mirrorModifier);
+        LEFT_HOLD_LAYER.animationContainer.addModifierLast(LEFT_HOLD_LAYER.speedModifier);
+        LEFT_HOLD_LAYER.mirrorModifier.setEnabled(false);
 
 
         MAIN_LAYER.currentAnimation = IDLE_STANDING;
         OVERLAY_LAYER.currentAnimation = BLANK_LOOP;
+        ATTACK_LAYER.currentAnimation = BLANK_LOOP;
         PASSIVE_LAYER.currentAnimation = BLANK_LOOP;
-        LANTERN_LAYER.currentAnimation = BLANK_LOOP;
-        TORCH_LAYER.currentAnimation = BLANK_LOOP;
+        RIGHT_HOLD_LAYER.currentAnimation = BLANK_LOOP;
+        LEFT_HOLD_LAYER.currentAnimation = BLANK_LOOP;
 
 
     }
@@ -363,16 +363,16 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
     public void loopedToolAnimation(KeyframeAnimation overlay, KeyframeAnimation overlay_sneak, String id, int fade, float speed, int priority) {
-        OVERLAY_LAYER.fadeTime = fade;
-        OVERLAY_LAYER.animationSpeed = speed;
-        OVERLAY_LAYER.priority = priority;
-        OVERLAY_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
+        ATTACK_LAYER.fadeTime = fade;
+        ATTACK_LAYER.animationSpeed = speed;
+        ATTACK_LAYER.priority = priority;
+        ATTACK_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
         if (crouched) {
-            OVERLAY_LAYER.currentAnimation = overlay_sneak;
-            OVERLAY_LAYER.currentAnimationId = id + "_sneak";
+            ATTACK_LAYER.currentAnimation = overlay_sneak;
+            ATTACK_LAYER.currentAnimationId = id + "_sneak";
         } else {
-            OVERLAY_LAYER.currentAnimation = overlay;
-            OVERLAY_LAYER.currentAnimationId = id;
+            ATTACK_LAYER.currentAnimation = overlay;
+            ATTACK_LAYER.currentAnimationId = id;
         }
 
 
@@ -525,11 +525,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         );
     });
 
-    ModifierLayer<IAnimation> mainContainer = MAIN_LAYER.animationContainer;
-    ModifierLayer<IAnimation> overlayContainer = OVERLAY_LAYER.animationContainer;
-    ModifierLayer<IAnimation> passiveContainer = PASSIVE_LAYER.animationContainer;
-    ModifierLayer<IAnimation> lanternContainer = LANTERN_LAYER.animationContainer;
-    ModifierLayer<IAnimation> torchContainer = TORCH_LAYER.animationContainer;
 
     public void animate() {
         AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) (Object)this;
@@ -550,9 +545,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
         MAIN_LAYER.speedModifier.speed = MAIN_LAYER.animationSpeed;
         OVERLAY_LAYER.speedModifier.speed = OVERLAY_LAYER.animationSpeed;
+        ATTACK_LAYER.speedModifier.speed = ATTACK_LAYER.animationSpeed;
         PASSIVE_LAYER.speedModifier.speed = PASSIVE_LAYER.animationSpeed;
-        LANTERN_LAYER.speedModifier.speed = LANTERN_LAYER.animationSpeed;
-        TORCH_LAYER.speedModifier.speed = TORCH_LAYER.animationSpeed;
+        RIGHT_HOLD_LAYER.speedModifier.speed = RIGHT_HOLD_LAYER.animationSpeed;
+        LEFT_HOLD_LAYER.speedModifier.speed = LEFT_HOLD_LAYER.animationSpeed;
 
         byaw = bodyYaw;
         hyaw = headYaw;
@@ -576,23 +572,29 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         OVERLAY_LAYER.animationSpeed = 1;
         OVERLAY_LAYER.priority = 0;
 
+        ATTACK_LAYER.currentAnimation = BLANK_LOOP;
+        ATTACK_LAYER.currentAnimationId = "blank_loop";
+        ATTACK_LAYER.fadeTime = 10;
+        ATTACK_LAYER.animationSpeed = 1;
+        ATTACK_LAYER.priority = 0;
+
         PASSIVE_LAYER.currentAnimation = BLANK_LOOP;
         PASSIVE_LAYER.currentAnimationId = "blank_loop";
         PASSIVE_LAYER.fadeTime = 10;
         PASSIVE_LAYER.animationSpeed = 1;
         PASSIVE_LAYER.priority = 0;
 
-        LANTERN_LAYER.currentAnimation = BLANK_LOOP;
-        LANTERN_LAYER.currentAnimationId = "blank_loop";
-        LANTERN_LAYER.fadeTime = 10;
-        LANTERN_LAYER.animationSpeed = 1;
-        LANTERN_LAYER.priority = 0;
+        RIGHT_HOLD_LAYER.currentAnimation = BLANK_LOOP;
+        RIGHT_HOLD_LAYER.currentAnimationId = "blank_loop";
+        RIGHT_HOLD_LAYER.fadeTime = 10;
+        RIGHT_HOLD_LAYER.animationSpeed = 1;
+        RIGHT_HOLD_LAYER.priority = 0;
 
-        TORCH_LAYER.currentAnimation = BLANK_LOOP;
-        TORCH_LAYER.currentAnimationId = "blank_loop";
-        TORCH_LAYER.fadeTime = 10;
-        TORCH_LAYER.animationSpeed = 1;
-        TORCH_LAYER.priority = 0;
+        LEFT_HOLD_LAYER.currentAnimation = BLANK_LOOP;
+        LEFT_HOLD_LAYER.currentAnimationId = "blank_loop";
+        LEFT_HOLD_LAYER.fadeTime = 10;
+        LEFT_HOLD_LAYER.animationSpeed = 1;
+        LEFT_HOLD_LAYER.priority = 0;
 
 
         crouched = isInSneakingPose();
@@ -1326,6 +1328,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
 
+
         //handswinging
         if(handSwinging) {
 //            LOGGER.info("HandswingTicks: " + handSwingTicks);
@@ -1336,7 +1339,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 double distance = item.getPos().distanceTo(eyePos);
                 double speed = player.getVelocity().length();
                 if(distance < speed * 10 + 1 && item.getItemAge() < 4) {
-                    ((SwingTypeGetter)player).setDropTicks(10);
+                    ((SwingTypeGetter)player).setDropTicks(CommonAnimations.DROP_ITEM.getLength());
                 }
             }
             //TODO Distinguish between using, Attacking and breaking Block
@@ -1374,31 +1377,31 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             else {
                 //sword attack
                 if (GloriousAnimConfig.hasSwordAttackAnimation(getMainHandStack().getItem()) && !isUsingItem() && rightHand.equals(MAIN_HAND)) {
-                    OVERLAY_LAYER.animationSpeed = 1.4f ;
+                    ATTACK_LAYER.animationSpeed = 1.4f ;
 
-                    OVERLAY_LAYER.fadeTime = 0;
-                    OVERLAY_LAYER.priority = 1;
+                    ATTACK_LAYER.fadeTime = 0;
+                    ATTACK_LAYER.priority = 1;
 
-                    OVERLAY_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
+                    ATTACK_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
 
                     if (swordSeq) {
 
                         if (crouched) {
-                            OVERLAY_LAYER.currentAnimation = SWORD_ATTACK_SNEAK;
-                            OVERLAY_LAYER.currentAnimationId = "sword_attack_sneak";
+                            ATTACK_LAYER.currentAnimation = SWORD_ATTACK_SNEAK;
+                            ATTACK_LAYER.currentAnimationId = "sword_attack_sneak";
                         } else {
-                            OVERLAY_LAYER.currentAnimation = SWORD_ATTACK;
-                            OVERLAY_LAYER.currentAnimationId = "sword_attack";
+                            ATTACK_LAYER.currentAnimation = SWORD_ATTACK;
+                            ATTACK_LAYER.currentAnimationId = "sword_attack";
                         }
 
 
                     } else {
                         if (crouched) {
-                            OVERLAY_LAYER.currentAnimation = SWORD_ATTACK_SNEAK_2;
-                            OVERLAY_LAYER.currentAnimationId = "sword_attack_sneak";
+                            ATTACK_LAYER.currentAnimation = SWORD_ATTACK_SNEAK_2;
+                            ATTACK_LAYER.currentAnimationId = "sword_attack_sneak";
                         } else {
-                            OVERLAY_LAYER.currentAnimation = SWORD_ATTACK_2;
-                            OVERLAY_LAYER.currentAnimationId = "sword_attack";
+                            ATTACK_LAYER.currentAnimation = SWORD_ATTACK_2;
+                            ATTACK_LAYER.currentAnimationId = "sword_attack";
                         }
 
                     }
@@ -1410,6 +1413,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 //pickaxe
                 else if (GloriousAnimConfig.hasPickaxeAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
                     loopedToolAnimation(PICKAXE_ATTACK, PICKAXE_ATTACK_SNEAK, "pickaxe_attack", 1, 2, 0);
+                }
+                //spear-like
+                else if (GloriousAnimConfig.hasSpearAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
+                    loopedToolAnimation(SPEAR_ATTACK, SPEAR_ATTACK_SNEAK, "spear_attack", 1, 2, 0);
                 }
                 //axe
                 else if (GloriousAnimConfig.hasAxeAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
@@ -1436,11 +1443,12 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             }
 
 //            if(isUsingItem()) {
-//                OVERLAY_LAYER.animationContainer.setAnimation(null);
+//                ATTACK_LAYER.animationContainer.setAnimation(null);
+//                ATTACK_LAYER.currentAnimation = BLANK_LOOP;
+//                ATTACK_LAYER.currentAnimationId = "blank_loop";
 //            }
 
         }
-
 
         //trident_throw
         if (((SwingTypeGetter)player).getPostTridentThrowTicks() > 0) {
@@ -1453,91 +1461,72 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         }
 
         //Lantern
-        if(GloriousAnimConfig.isLanternItem(player.getOffHandStack().getItem()) && GloriousAnimConfig.isLanternItem(player.getMainHandStack().getItem())) {
-
-            LANTERN_LAYER.currentAnimation = LANTERN_HOLD_TWO_HANDS;
-            LANTERN_LAYER.currentAnimationId = "lantern_hold_two_hands";
-
-
-            LANTERN_LAYER.animationSpeed = 1.0f;
-            LANTERN_LAYER.priority = 0;
-            LANTERN_LAYER.fadeTime = 5;
-
-
-        } else if(GloriousAnimConfig.isLanternItem(player.getMainHandStack().getItem())) {
+        if(GloriousAnimConfig.isLanternItem(player.getStackInHand(rightHand).getItem())) {
 
             if(OVERLAY_LAYER.currentAnimationId.contains("bow")) {
-                LANTERN_LAYER.currentAnimation = BLANK_LOOP;
-                LANTERN_LAYER.currentAnimationId = "blank_loop";
+                RIGHT_HOLD_LAYER.currentAnimation = BLANK_LOOP;
+                RIGHT_HOLD_LAYER.currentAnimationId = "blank_loop";
             } else {
-                LANTERN_LAYER.currentAnimation = LANTERN_HOLD;
-                LANTERN_LAYER.currentAnimationId = "lantern_hold_right";
-                LANTERN_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
+                RIGHT_HOLD_LAYER.currentAnimation = LANTERN_HOLD;
+                RIGHT_HOLD_LAYER.currentAnimationId = "lantern_hold_right";
+                RIGHT_HOLD_LAYER.mirrorModifier.setEnabled(false);
 
-                LANTERN_LAYER.animationSpeed = 1.0f;
-                LANTERN_LAYER.priority = 0;
-                LANTERN_LAYER.fadeTime = 5;
+                RIGHT_HOLD_LAYER.animationSpeed = 1.0f;
+                RIGHT_HOLD_LAYER.priority = 0;
+                RIGHT_HOLD_LAYER.fadeTime = 5;
             }
 
-        } else if(GloriousAnimConfig.isLanternItem(player.getOffHandStack().getItem())) {
+        }
+        if(GloriousAnimConfig.isLanternItem(player.getStackInHand(leftHand).getItem())) {
 
             if(OVERLAY_LAYER.currentAnimationId.contains("bow")) {
-                LANTERN_LAYER.currentAnimation = BLANK_LOOP;
-                LANTERN_LAYER.currentAnimationId = "blank_loop";
+                LEFT_HOLD_LAYER.currentAnimation = BLANK_LOOP;
+                LEFT_HOLD_LAYER.currentAnimationId = "blank_loop";
             } else {
-                LANTERN_LAYER.currentAnimation = LANTERN_HOLD;
-                LANTERN_LAYER.currentAnimationId = "lantern_hold_left";
-                LANTERN_LAYER.mirrorModifier.setEnabled(rightHand == MAIN_HAND);
+                LEFT_HOLD_LAYER.currentAnimation = LANTERN_HOLD;
+                LEFT_HOLD_LAYER.currentAnimationId = "lantern_hold_left";
+                LEFT_HOLD_LAYER.mirrorModifier.setEnabled(true);
 
 
-                LANTERN_LAYER.animationSpeed = 1.0f;
-                LANTERN_LAYER.priority = 0;
-                LANTERN_LAYER.fadeTime = 5;
+                LEFT_HOLD_LAYER.animationSpeed = 1.0f;
+                LEFT_HOLD_LAYER.priority = 0;
+                LEFT_HOLD_LAYER.fadeTime = 5;
             }
-
-
         }
 
 
         //Torch
-        if(GloriousAnimConfig.isTorchItem(player.getOffHandStack().getItem()) && GloriousAnimConfig.isTorchItem(player.getMainHandStack().getItem())) {
-            TORCH_LAYER.currentAnimation = TORCH_HOLD_TWO_HANDS;
-            TORCH_LAYER.currentAnimationId = "torch_hold_two_hands";
-
-
-            TORCH_LAYER.animationSpeed = 1.0f;
-            TORCH_LAYER.priority = 0;
-            TORCH_LAYER.fadeTime = 5;
-        } else if(GloriousAnimConfig.isTorchItem(player.getMainHandStack().getItem())) {
+        if(GloriousAnimConfig.isTorchItem(player.getStackInHand(rightHand).getItem())) {
 
             if(OVERLAY_LAYER.currentAnimationId.contains("bow")) {
-                TORCH_LAYER.currentAnimation = BLANK_LOOP;
-                TORCH_LAYER.currentAnimationId = "blank_loop";
+                RIGHT_HOLD_LAYER.currentAnimation = BLANK_LOOP;
+                RIGHT_HOLD_LAYER.currentAnimationId = "blank_loop";
             } else {
-                TORCH_LAYER.currentAnimation = TORCH_HOLD;
-                TORCH_LAYER.currentAnimationId = "torch_hold_right";
-                TORCH_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
+                RIGHT_HOLD_LAYER.currentAnimation = TORCH_HOLD;
+                RIGHT_HOLD_LAYER.currentAnimationId = "torch_hold_right";
+                RIGHT_HOLD_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
 
-                TORCH_LAYER.animationSpeed = 1.0f;
-                TORCH_LAYER.priority = 0;
-                TORCH_LAYER.fadeTime = 5;
+                RIGHT_HOLD_LAYER.animationSpeed = 1.0f;
+                RIGHT_HOLD_LAYER.priority = 0;
+                RIGHT_HOLD_LAYER.fadeTime = 5;
             }
 
 
-        } else if(GloriousAnimConfig.isTorchItem(player.getOffHandStack().getItem())) {
+        }
+        if(GloriousAnimConfig.isTorchItem(player.getStackInHand(leftHand).getItem())) {
 
             if(OVERLAY_LAYER.currentAnimationId.contains("bow")) {
-                TORCH_LAYER.currentAnimation = BLANK_LOOP;
-                TORCH_LAYER.currentAnimationId = "blank_loop";
+                LEFT_HOLD_LAYER.currentAnimation = BLANK_LOOP;
+                LEFT_HOLD_LAYER.currentAnimationId = "blank_loop";
             } else {
-                TORCH_LAYER.currentAnimation = TORCH_HOLD;
-                TORCH_LAYER.currentAnimationId = "torch_hold_left";
-                TORCH_LAYER.mirrorModifier.setEnabled(rightHand == MAIN_HAND);
+                LEFT_HOLD_LAYER.currentAnimation = TORCH_HOLD;
+                LEFT_HOLD_LAYER.currentAnimationId = "torch_hold_left";
+                LEFT_HOLD_LAYER.mirrorModifier.setEnabled(rightHand == MAIN_HAND);
 
 
-                TORCH_LAYER.animationSpeed = 1.0f;
-                TORCH_LAYER.priority = 0;
-                TORCH_LAYER.fadeTime = 5;
+                LEFT_HOLD_LAYER.animationSpeed = 1.0f;
+                LEFT_HOLD_LAYER.priority = 0;
+                LEFT_HOLD_LAYER.fadeTime = 5;
             }
 
 
@@ -1695,9 +1684,9 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
         //region Apply Current Animation
-        if ((!Objects.equals(MAIN_LAYER.currentAnimationId, MAIN_LAYER.prevAnimationId) && MAIN_LAYER.priority >= MAIN_LAYER.prevPriority) || !mainContainer.isActive() || !Objects.equals(modifyId, prevModifyId)) {
+        if ((!Objects.equals(MAIN_LAYER.currentAnimationId, MAIN_LAYER.prevAnimationId) && MAIN_LAYER.priority >= MAIN_LAYER.prevPriority) || !MAIN_LAYER.animationContainer.isActive() || !Objects.equals(modifyId, prevModifyId)) {
 
-            mainContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(MAIN_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(MAIN_LAYER.currentAnimation));
+            MAIN_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(MAIN_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(MAIN_LAYER.currentAnimation));
             animationTick = 0;
 
             MAIN_LAYER.prevAnimationId = MAIN_LAYER.currentAnimationId;
@@ -1714,7 +1703,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         //endregion
 
         //region Apply Overlay Animation
-        if ((!Objects.equals(OVERLAY_LAYER.currentAnimationId, OVERLAY_LAYER.prevAnimationId) && OVERLAY_LAYER.priority >= OVERLAY_LAYER.prevPriority) || !overlayContainer.isActive()){
+        if ((!Objects.equals(OVERLAY_LAYER.currentAnimationId, OVERLAY_LAYER.prevAnimationId) && OVERLAY_LAYER.priority >= OVERLAY_LAYER.prevPriority) || !OVERLAY_LAYER.animationContainer.isActive()){
             RightBowModifier.enabled = false;
             LeftBowModifier.enabled = false;
             //ShieldModifier.enabled = false;
@@ -1723,42 +1712,57 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 OVERLAY_LAYER.fadeTime = 3;
             }
 
-//            if(PARAGLIDER_COMPAT) {
-//                if (!OVERLAY_LAYER.currentAnimationId.equals("paraglider")) {
-//                    ParagliderModifier.enabled = false;
-//                }
-//            }
-
-
-            if (OVERLAY_LAYER.currentAnimationId.equals("sword_attack") || OVERLAY_LAYER.currentAnimationId.equals("sword_attack_sneak")) {
-                swordSeq = !swordSeq;
-                overlayContainer.setAnimation(null);
-                overlayContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(OVERLAY_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(OVERLAY_LAYER.currentAnimation));
-
-            }else {
-                overlayContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(OVERLAY_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(OVERLAY_LAYER.currentAnimation), true);
-            }
-
-
+            OVERLAY_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(OVERLAY_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(OVERLAY_LAYER.currentAnimation), true);
 
 
             OVERLAY_LAYER.prevAnimationId = OVERLAY_LAYER.currentAnimationId;
             OVERLAY_LAYER.prevPriority = OVERLAY_LAYER.priority;
         }
 
-        if(handSwingTicks < 1 && (OVERLAY_LAYER.currentAnimationId.equals("generic_handswing_right") || OVERLAY_LAYER.currentAnimationId.equals("generic_handswing_left"))) {
+
+        //endregion
 
 
+        //region Apply AttackLayer Animation
 
-            overlayContainer.setAnimation(null);
-            overlayContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(OVERLAY_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(OVERLAY_LAYER.currentAnimation), true);
+        if(!(OVERLAY_LAYER.currentAnimationId.isEmpty() || OVERLAY_LAYER.currentAnimationId.equals("blank_loop"))) {
+            ATTACK_LAYER.currentAnimation = BLANK_LOOP;
+            ATTACK_LAYER.currentAnimationId = "blank_loop";
+            ATTACK_LAYER.fadeTime = 6;
+            ATTACK_LAYER.animationContainer.setAnimation(null);
         }
+
+        if ((!Objects.equals(ATTACK_LAYER.currentAnimationId, ATTACK_LAYER.prevAnimationId) && ATTACK_LAYER.priority >= ATTACK_LAYER.prevPriority) || !ATTACK_LAYER.animationContainer.isActive()){
+
+            if (ATTACK_LAYER.currentAnimationId.equals("sword_attack") || ATTACK_LAYER.currentAnimationId.equals("sword_attack_sneak")) {
+                swordSeq = !swordSeq;
+                ATTACK_LAYER.animationContainer.setAnimation(null);
+                ATTACK_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(ATTACK_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(ATTACK_LAYER.currentAnimation));
+
+            }else {
+                ATTACK_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(ATTACK_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(ATTACK_LAYER.currentAnimation), true);
+            }
+
+            ATTACK_LAYER.prevAnimationId = ATTACK_LAYER.currentAnimationId;
+            ATTACK_LAYER.prevPriority = ATTACK_LAYER.priority;
+        }
+
+        if(handSwingTicks < 1 && (ATTACK_LAYER.currentAnimationId.equals("generic_handswing_right") || ATTACK_LAYER.currentAnimationId.equals("generic_handswing_left"))) {
+            ATTACK_LAYER.animationContainer.setAnimation(null);
+            ATTACK_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(ATTACK_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(ATTACK_LAYER.currentAnimation), true);
+        }
+
+//        if(!(OVERLAY_LAYER.currentAnimationId.isEmpty() || OVERLAY_LAYER.currentAnimationId.equals("blank_loop")) ) {
+//            ATTACK_LAYER.animationContainer.setAnimation(null);
+//            ATTACK_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(3, INOUTSINE), new KeyframeAnimationPlayer(BLANK_LOOP));
+//        }
+
         //endregion
 
         //region Apply Passive Overlay Animation
-        if ((!Objects.equals(PASSIVE_LAYER.currentAnimationId, PASSIVE_LAYER.prevAnimationId) && PASSIVE_LAYER.priority >= PASSIVE_LAYER.prevPriority) || !passiveContainer.isActive()){
+        if ((!Objects.equals(PASSIVE_LAYER.currentAnimationId, PASSIVE_LAYER.prevAnimationId) && PASSIVE_LAYER.priority >= PASSIVE_LAYER.prevPriority) || !PASSIVE_LAYER.animationContainer.isActive()){
 
-            passiveContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(PASSIVE_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(PASSIVE_LAYER.currentAnimation), true);
+            PASSIVE_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(PASSIVE_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(PASSIVE_LAYER.currentAnimation), true);
 
 
             PASSIVE_LAYER.prevAnimationId = PASSIVE_LAYER.currentAnimationId;
@@ -1767,39 +1771,39 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         //endregion
 
         //region Apply LANTERN Overlay Animation
-        if ((!Objects.equals(LANTERN_LAYER.currentAnimationId, LANTERN_LAYER.prevAnimationId) && LANTERN_LAYER.priority >= LANTERN_LAYER.prevPriority) || !passiveContainer.isActive()){
+        if ((!Objects.equals(RIGHT_HOLD_LAYER.currentAnimationId, RIGHT_HOLD_LAYER.prevAnimationId) && RIGHT_HOLD_LAYER.priority >= RIGHT_HOLD_LAYER.prevPriority) || !PASSIVE_LAYER.animationContainer.isActive()){
 
-            lanternContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(LANTERN_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(LANTERN_LAYER.currentAnimation), true);
+            RIGHT_HOLD_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(RIGHT_HOLD_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(RIGHT_HOLD_LAYER.currentAnimation), true);
 
 
-            LANTERN_LAYER.prevAnimationId = LANTERN_LAYER.currentAnimationId;
-            LANTERN_LAYER.prevPriority = LANTERN_LAYER.priority;
+            RIGHT_HOLD_LAYER.prevAnimationId = RIGHT_HOLD_LAYER.currentAnimationId;
+            RIGHT_HOLD_LAYER.prevPriority = RIGHT_HOLD_LAYER.priority;
         }
         //endregion
 
         //region Apply TORCH Overlay Animation
-        if ((!Objects.equals(TORCH_LAYER.currentAnimationId, TORCH_LAYER.prevAnimationId) && TORCH_LAYER.priority >= TORCH_LAYER.prevPriority) || !passiveContainer.isActive()){
+        if ((!Objects.equals(LEFT_HOLD_LAYER.currentAnimationId, LEFT_HOLD_LAYER.prevAnimationId) && LEFT_HOLD_LAYER.priority >= LEFT_HOLD_LAYER.prevPriority) || !PASSIVE_LAYER.animationContainer.isActive()){
 
-            torchContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(TORCH_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(TORCH_LAYER.currentAnimation), true);
+            LEFT_HOLD_LAYER.animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(LEFT_HOLD_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(LEFT_HOLD_LAYER.currentAnimation), true);
 
 
-            TORCH_LAYER.prevAnimationId = TORCH_LAYER.currentAnimationId;
-            TORCH_LAYER.prevPriority = TORCH_LAYER.priority;
+            LEFT_HOLD_LAYER.prevAnimationId = LEFT_HOLD_LAYER.currentAnimationId;
+            LEFT_HOLD_LAYER.prevPriority = LEFT_HOLD_LAYER.priority;
         }
         //endregion
 
         //region Write TorsoPos
-        if (mainContainer.isActive()){
-            torso2 = overlayContainer.get3DTransform("torso", POSITION, 0, zero);
+        if (MAIN_LAYER.animationContainer.isActive()){
+            torso2 = OVERLAY_LAYER.animationContainer.get3DTransform("torso", POSITION, 0, zero);
             if (torso2.getZ() == 0 && torso2.getY() == 0) {
-                torsoPos = mainContainer.get3DTransform("torso", POSITION, 0, zero);
+                torsoPos = MAIN_LAYER.animationContainer.get3DTransform("torso", POSITION, 0, zero);
             } else {
                 torsoPos = torso2;
             }
 
-            torsoRotation2 = overlayContainer.get3DTransform("torso", ROTATION, 0,zero);
+            torsoRotation2 = OVERLAY_LAYER.animationContainer.get3DTransform("torso", ROTATION, 0,zero);
             if (torsoRotation2.getX() == 0) {
-                torsoRotation = mainContainer.get3DTransform("torso", ROTATION, 0, zero);
+                torsoRotation = MAIN_LAYER.animationContainer.get3DTransform("torso", ROTATION, 0, zero);
             } else {
                 torsoRotation = torsoRotation2;
             }
