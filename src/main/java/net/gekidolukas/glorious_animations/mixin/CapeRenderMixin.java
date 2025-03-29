@@ -2,6 +2,7 @@ package net.gekidolukas.glorious_animations.mixin;
 
 
 import dev.kosmx.playerAnim.core.util.Vec3f;
+import net.gekidolukas.glorious_animations.interfaces.TorsoPosGetter;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.CapeFeatureRenderer;
@@ -25,7 +26,7 @@ public class CapeRenderMixin {
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/network/AbstractClientPlayerEntity;FFFFFF)V",
             at = @At(value = "INVOKE",target = "Lnet/minecraft/client/util/math/MatrixStack;translate(FFF)V", shift = At.Shift.AFTER))
     public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, AbstractClientPlayerEntity abstractClientPlayerEntity, float f, float g, float h, float j, float k, float l, CallbackInfo ci){
-        Pos = abstractClientPlayerEntity.getTorsoPos();
+        Pos = ((TorsoPosGetter)abstractClientPlayerEntity).getTorsoPos();
         //Rot = abstractClientPlayerEntity.getTorsoRotation();
         x = Pos.getX();
         y = Pos.getY();

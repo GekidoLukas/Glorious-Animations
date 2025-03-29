@@ -3,6 +3,7 @@ package net.gekidolukas.glorious_animations.mixin.NEA.hands;
 import dev.tr7zw.notenoughanimations.access.PlayerData;
 import dev.tr7zw.notenoughanimations.animations.hands.PetAnimation;
 import dev.tr7zw.notenoughanimations.versionless.animations.BodyPart;
+import net.gekidolukas.glorious_animations.interfaces.TorsoPosGetter;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.util.Arm;
@@ -18,9 +19,9 @@ public class NEAPetMixin {
     public void apply(AbstractClientPlayerEntity entity, PlayerData data, PlayerEntityModel<AbstractClientPlayerEntity> model, BodyPart part, float delta, float tickCounter, CallbackInfo ci){
         Arm arm = part == BodyPart.LEFT_ARM ? Arm.LEFT : Arm.RIGHT;
         if (arm.equals(Arm.LEFT)) {
-            entity.disableLeftArmB(true);
+            ((TorsoPosGetter)entity).disableLeftArmB(true);
         } else {
-            entity.disableRightArmB(true);
+            ((TorsoPosGetter)entity).disableRightArmB(true);
         }
 
     }

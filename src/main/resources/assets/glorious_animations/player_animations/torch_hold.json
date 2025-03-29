@@ -1,0 +1,15 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"torch_hold": {
+			"loop": true,
+			"bones": {
+				"rightArm": {
+					"rotation": {
+						"vector": [-82.55091, 3.45514, 7.1125]
+					}
+				}
+			}
+		}
+	}
+}

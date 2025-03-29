@@ -6,16 +6,19 @@ import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
 import dev.kosmx.playerAnim.api.layered.ModifierLayer;
 import dev.kosmx.playerAnim.api.layered.modifier.AbstractFadeModifier;
 import dev.kosmx.playerAnim.api.layered.modifier.AdjustmentModifier;
-import dev.kosmx.playerAnim.api.layered.modifier.MirrorModifier;
-import dev.kosmx.playerAnim.api.layered.modifier.SpeedModifier;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationAccess;
+import net.gekidolukas.glorious_animations.AdvancedLayer;
+import net.gekidolukas.glorious_animations.CommonAnimations;
+import static net.gekidolukas.glorious_animations.CommonAnimations.*;
+
+import net.gekidolukas.glorious_animations.GloriousAnimations;
 import net.gekidolukas.glorious_animations.IExampleAnimatedPlayer;
 import net.gekidolukas.glorious_animations.compat.*;
 import net.gekidolukas.glorious_animations.config.GloriousAnimConfig;
 import net.gekidolukas.glorious_animations.interfaces.SwingTypeGetter;
-import net.gekidolukas.glorious_animations.interfaces.torsoPosGetter;
+import net.gekidolukas.glorious_animations.interfaces.TorsoPosGetter;
 import net.minecraft.block.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -35,7 +38,6 @@ import net.minecraft.entity.vehicle.MinecartEntity;
 import net.minecraft.item.*;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -56,7 +58,6 @@ import java.util.Optional;
 import static dev.kosmx.playerAnim.api.TransformType.POSITION;
 import static dev.kosmx.playerAnim.api.TransformType.ROTATION;
 import static dev.kosmx.playerAnim.core.util.Ease.INOUTSINE;
-import static dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry.*;
 import static java.lang.Math.*;
 import static net.gekidolukas.glorious_animations.GloriousAnimations.*;
 import static net.minecraft.util.Hand.MAIN_HAND;
@@ -66,114 +67,44 @@ import static net.minecraft.util.Hand.OFF_HAND;
 @Unique
 @Mixin(AbstractClientPlayerEntity.class)
 
-public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implements IExampleAnimatedPlayer, torsoPosGetter {
-
+public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implements IExampleAnimatedPlayer, TorsoPosGetter {
 
 
 
     @Shadow @Final public ClientWorld clientWorld;
-
     @Shadow public abstract void tick();
 
-    private final ModifierLayer<IAnimation> modAnimationContainer = new ModifierLayer<>();
-    
-    private final ModifierLayer<IAnimation> modAnimationContainer2 = new ModifierLayer<>();
 
-    private final ModifierLayer<IAnimation> modPassiveAnimationContainer = new ModifierLayer<>();
 
     public SeriousPlayerAnimationsMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
         super(world, pos, yaw, gameProfile);
     }
 
+
+
+    @Unique
+    AdvancedLayer OVERLAY_LAYER = new AdvancedLayer(); //TODO Change into AttackLayer and InteractHold Layer
+    @Unique
+    AdvancedLayer ATTACK_LAYER = new AdvancedLayer();
+    @Unique
+    AdvancedLayer PASSIVE_LAYER = new AdvancedLayer();
+    @Unique
+    AdvancedLayer TORCH_LAYER = new AdvancedLayer();
+    @Unique
+    AdvancedLayer LANTERN_LAYER = new AdvancedLayer();
+    @Unique
+    AdvancedLayer MAIN_LAYER = new AdvancedLayer();
+
+
     @Unique
     public boolean isStillSprinting() {
-
         if(this.isSprinting()) {
             sprintTicks = 5;
         }
-
         return sprintTicks > 0;
     }
 
     private int sprintTicks = 0;
-
-
-
-
-
-
-    //region Animation Variables
-    public KeyframeAnimation punch = null;
-    public KeyframeAnimation sword_attack = null;
-    public KeyframeAnimation sword_attack2 = null;
-    public KeyframeAnimation idle_standing = null;
-    public KeyframeAnimation idle_creative_flying = null;
-    public KeyframeAnimation idle_creative_flying_item = null;
-    public KeyframeAnimation walking = null;
-    public KeyframeAnimation walking_backwards = null;
-    public KeyframeAnimation running = null;
-    public KeyframeAnimation turn_left = null;
-    public KeyframeAnimation turn_right = null;
-    public KeyframeAnimation idle_sneak = null;
-    public KeyframeAnimation walking_sneak = null;
-    public KeyframeAnimation walking_sneak_backwards = null;
-    public KeyframeAnimation sword_attack_sneak = null;
-    public KeyframeAnimation sword_attack_sneak2 = null;
-    public KeyframeAnimation falling = null;
-    public KeyframeAnimation falling_mace = null;
-    public KeyframeAnimation blank_loop = null;
-    public KeyframeAnimation elytra = null;
-    public KeyframeAnimation totem_revive = null;
-    public KeyframeAnimation trident_throw = null;
-    public KeyframeAnimation lantern_hold = null;
-    public KeyframeAnimation lantern_hold_two_hands = null;
-    public KeyframeAnimation eating_right = null;
-    public KeyframeAnimation eating_left = null;
-    public KeyframeAnimation eating_right_sneak = null;
-    public KeyframeAnimation eating_left_sneak = null;
-    public KeyframeAnimation idle_in_water = null;
-    public KeyframeAnimation forward_in_water = null;
-    public KeyframeAnimation backwards_in_water = null;
-    public KeyframeAnimation up_in_water = null;
-    public KeyframeAnimation swimming = null;
-    public KeyframeAnimation crawling = null;
-    public KeyframeAnimation idle_crawling = null;
-    public KeyframeAnimation crawling_backwards = null;
-    public KeyframeAnimation idle_climbing = null;
-    public KeyframeAnimation idle_climbing_sneak = null;
-    public KeyframeAnimation climbing = null;
-    public KeyframeAnimation climbing_sneak = null;
-    public KeyframeAnimation climbing_backwards = null;
-    public KeyframeAnimation mace = null;
-    public KeyframeAnimation pickaxe_attack = null;
-    public KeyframeAnimation pickaxe_attack_sneak = null;
-    public KeyframeAnimation pickaxe_break = null;
-    public KeyframeAnimation pickaxe_break_sneak = null;
-    public KeyframeAnimation drop_item = null;
-    public KeyframeAnimation drop_item_sneak = null;
-    public KeyframeAnimation minecart_idle = null;
-    public KeyframeAnimation minecart_pickaxe = null;
-    public KeyframeAnimation horse_idle = null;
-    public KeyframeAnimation horse_running = null;
-    public KeyframeAnimation horse_pickaxe = null;
-    public KeyframeAnimation boat1 = null;
-    public KeyframeAnimation eating = null;
-    public KeyframeAnimation bow_idle = null;
-    public KeyframeAnimation bow_sneak = null;
-    public KeyframeAnimation bow_sneak_walking = null;
-    public KeyframeAnimation sleeping = null;
-    public KeyframeAnimation axe = null;
-    public KeyframeAnimation axe_sneak = null;
-    public KeyframeAnimation axe_break = null;
-    public KeyframeAnimation axe_break_sneak = null;
-    public KeyframeAnimation shovel = null;
-    public KeyframeAnimation shovel_sneak = null;
-    public KeyframeAnimation paraglider = null;
-    public KeyframeAnimation generic_handswing = null;
-    public KeyframeAnimation shield = null;
-    public KeyframeAnimation shield_sneak = null;
-    public KeyframeAnimation trident = null;
-    //endregion
 
 
     public Vec3f torso2 = new Vec3f(0, 0, 0);
@@ -183,15 +114,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     public Vec3f zero = new Vec3f(0, 0, 0);
 
 
-
-
-
-    
-    public KeyframeAnimation currentAnimation = null;
-    public KeyframeAnimation currentOverlay = null;
-    public KeyframeAnimation passiveOverlay = null;
-
-    public KeyframeAnimation prevAnimation = null;
     public KeyframeAnimation.AnimationBuilder builder = null;
 
 
@@ -199,122 +121,60 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
     
-    public void reloadAnimationVariables() {
-        punch = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "punch"));
-        sword_attack = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sword_attack"));
-        sword_attack2 = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sword_attack2"));
-        idle_standing = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_standing"));
-        idle_creative_flying = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_creative_flying"));
-        idle_creative_flying_item = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_creative_flying_item"));
-        walking = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "walking"));
 
-        walking_backwards = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "walking_backwards"));
-        running = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "running"));
-        turn_left = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "turn_left"));
-        turn_right = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "turn_right"));
-        idle_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_sneak"));
-        walking_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "walking_sneak"));
-        walking_sneak_backwards = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "walking_sneak_backwards"));
-        sword_attack_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sword_attack_sneak"));
-        sword_attack_sneak2 = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sword_attack_sneak2"));
-        falling = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "falling"));
-        falling_mace = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "falling_mace"));
-        blank_loop = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "blank_loop"));
-        elytra = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "elytra"));
-        totem_revive = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "totem_revive"));
-        trident_throw = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "trident_throw"));
-        lantern_hold = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "lantern_hold"));
-        lantern_hold_two_hands = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "lantern_hold_two_hands"));
-        eating_right = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating_right"));
-        eating_left = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating_left"));
-        eating_right_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating_right_sneak"));
-        eating_left_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating_left_sneak"));
-        idle_in_water = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_in_water"));
-        forward_in_water = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "forward_in_water"));
-        backwards_in_water = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "backwards_in_water"));
-        up_in_water = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "up_in_water"));
-        swimming = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "swimming"));
-        crawling = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "crawling"));
-        idle_crawling = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_crawling"));
-        crawling_backwards = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "crawling_backwards"));
-        climbing = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "climbing"));
-        climbing_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "climbing_sneak"));
-        idle_climbing = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_climbing"));
-        idle_climbing_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "idle_climbing_sneak"));
-        climbing_backwards = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "climbing_backwards"));
-        mace = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "mace"));
-        pickaxe_attack = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_attack"));
-        pickaxe_attack_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_attack_sneak"));
-        pickaxe_break = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_break"));
-        pickaxe_break_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "pickaxe_break_sneak"));
-        drop_item = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "drop_item"));
-        drop_item_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "drop_item_sneak"));
-        minecart_idle = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "minecart_idle"));
-        minecart_pickaxe = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "minecart_pickaxe"));
-        horse_idle = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "horse_idle"));
-        horse_running = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "horse_running"));
-        horse_pickaxe = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "horse_pickaxe"));
-        boat1 = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "boat1"));
-        eating = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "eating"));
-        bow_idle = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "bow_idle"));
-        bow_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "bow_sneak"));
-        bow_sneak_walking = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "bow_sneak_walking"));
-        sleeping = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "sleeping"));
-        axe = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "axe"));
-        axe_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "axe_sneak"));
-        axe_break = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "axe_break"));
-        axe_break_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "axe_break_sneak"));
-        shovel = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "shovel"));
-        shovel_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "shovel_sneak"));
-        paraglider = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "paraglider"));
-        generic_handswing = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "generic_handswing"));
-        shield = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "shield"));
-        shield_sneak = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "shield_sneak"));
-        trident = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "trident"));
-
-
-    }
 
 
 
     @Inject(method = "<init>", at = @At(value = "RETURN"))
     private void init(ClientWorld world, GameProfile profile, CallbackInfo info) {
+        CommonAnimations.reloadAnimationVariables();
 
 
-        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(1, modAnimationContainer);
-        modAnimationContainer.addModifierLast(AnimationSpeedModifier);
-        modAnimationContainer.addModifierLast(AnimationMirrorModifier);
-        AnimationMirrorModifier.setEnabled(false);
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(1, MAIN_LAYER.animationContainer);
+        MAIN_LAYER.animationContainer.addModifierLast(MAIN_LAYER.speedModifier);
+        MAIN_LAYER.animationContainer.addModifierLast(MAIN_LAYER.mirrorModifier);
+        MAIN_LAYER.mirrorModifier.setEnabled(false);
 
 
-        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(2, modAnimationContainer2);
-        modAnimationContainer2.addModifierLast(RightBowModifier);
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(2, OVERLAY_LAYER.animationContainer);
+        OVERLAY_LAYER.animationContainer.addModifierLast(RightBowModifier);
+        OVERLAY_LAYER.animationContainer.addModifierLast(LeftBowModifier);
         RightBowModifier.enabled = false;
-        modAnimationContainer2.addModifierLast(LeftBowModifier);
         LeftBowModifier.enabled = false;
+        OVERLAY_LAYER.animationContainer.addModifierLast(OVERLAY_LAYER.speedModifier);
+        OVERLAY_LAYER.animationContainer.addModifierLast(OVERLAY_LAYER.mirrorModifier);
+        OVERLAY_LAYER.mirrorModifier.setEnabled(false);
 
-        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(3, modPassiveAnimationContainer);
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(3, ATTACK_LAYER.animationContainer);
+        ATTACK_LAYER.animationContainer.addModifierLast(ATTACK_LAYER.mirrorModifier);
+        ATTACK_LAYER.animationContainer.addModifierLast(ATTACK_LAYER.speedModifier);
+        ATTACK_LAYER.mirrorModifier.setEnabled(false);
+        ATTACK_LAYER.animationContainer.addModifierLast(RightHandSwingModifier);
+        ATTACK_LAYER.animationContainer.addModifierLast(LeftHandSwingModifier);
+        RightHandSwingModifier.enabled = false;
+        LeftHandSwingModifier.enabled = false;
 
-        modPassiveAnimationContainer.addModifierLast(PassiveOverlayMirrorModifier);
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(4, PASSIVE_LAYER.animationContainer);
+        PASSIVE_LAYER.animationContainer.addModifierLast(PASSIVE_LAYER.mirrorModifier);
+        PASSIVE_LAYER.animationContainer.addModifierLast(PASSIVE_LAYER.speedModifier);
+        PASSIVE_LAYER.mirrorModifier.setEnabled(false);
 
-        //modAnimationContainer2.addModifierLast(ShieldModifier);
-        //ShieldModifier.enabled = false;
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(5, LANTERN_LAYER.animationContainer);
+        LANTERN_LAYER.animationContainer.addModifierLast(LANTERN_LAYER.mirrorModifier);
+        LANTERN_LAYER.animationContainer.addModifierLast(LANTERN_LAYER.speedModifier);
+        LANTERN_LAYER.mirrorModifier.setEnabled(false);
 
-        modAnimationContainer2.addModifierLast(OverlaySpeedModifier);
-        modAnimationContainer2.addModifierLast(OverlayMirrorModifier);
-        OverlayMirrorModifier.setEnabled(false);
-
-        if (PARAGLIDER_COMPAT) {
-            modAnimationContainer2.addModifierLast(ParagliderModifier);
-            ParagliderModifier.enabled = false;
-        }
+        PlayerAnimationAccess.getPlayerAnimLayer((AbstractClientPlayerEntity) (Object) this).addAnimLayer(6, TORCH_LAYER.animationContainer);
+        TORCH_LAYER.animationContainer.addModifierLast(TORCH_LAYER.mirrorModifier);
+        TORCH_LAYER.animationContainer.addModifierLast(TORCH_LAYER.speedModifier);
+        TORCH_LAYER.mirrorModifier.setEnabled(false);
 
 
-
-        reloadAnimationVariables();
-        currentAnimation = idle_standing;
-        currentOverlay = blank_loop;
-        passiveOverlay = blank_loop;
+        MAIN_LAYER.currentAnimation = IDLE_STANDING;
+        OVERLAY_LAYER.currentAnimation = BLANK_LOOP;
+        PASSIVE_LAYER.currentAnimation = BLANK_LOOP;
+        LANTERN_LAYER.currentAnimation = BLANK_LOOP;
+        TORCH_LAYER.currentAnimation = BLANK_LOOP;
 
 
     }
@@ -322,7 +182,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
     @Override
     public ModifierLayer<IAnimation> seriousplayeranimations_getModAnimation() {
-        return modAnimationContainer;
+        return MAIN_LAYER.animationContainer;
     }
 
 
@@ -372,24 +232,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
 
-    int fadeTime = 0;
-    int overlayFadeTime = 0;
-    int passiveOverlayFadeTime = 0;
-    float overlayAnimationSpeed = 1;
-    float passiveOverlayAnimationSpeed = 1;
-    int overlayPriority = 0;
-    int prevOverlayPriority = 0;
-    int passiveOverlayPriority = 0;
-    int prevPassiveOverlayPriority = 0;
-    String currentAnimationId = "";
-    String prevAnimationId = "";
-    String currentOverlayId = "";
-    String prevOverlayId = "";
-    String currentPassiveOverlayId = "";
-    String prevPassiveOverlayId = "";
+
     boolean modified = false;
-    float animationSpeed = 1;
     float byaw = 0;
+    float prevbyaw = 0;
     float hyaw = 0;
     float vx = 0;
     float vy = 0;
@@ -397,14 +243,11 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     double moveSpeed = 0;
     float turn = 0;
     boolean prevOnGround = false;
-    int priority = 0;
-    int prevPriority = 0;
     Vec3d lastPos = new Vec3d(0, 0, 0);
     boolean swordSeq = true;
     String modifyId = "";
     String prevModifyId = "";
-    String blockStateString = "";
-    String boatString = "";
+//    String boatString = "";
     int flychecker = 0;
     double vyfly = 0;
     boolean isMovingBackwards = false;
@@ -415,11 +258,10 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     Hand rightHand = MAIN_HAND;
     Hand leftHand = OFF_HAND;
     Vec3d pos;
-    float prevbyaw = 0;
-    Item item;
+
 
     public void disableMainArm() {
-        builder = currentAnimation.mutableCopy();
+        builder = MAIN_LAYER.currentAnimation.mutableCopy();
         var rightArm = builder.getPart("rightArm");
         assert rightArm != null;
         var leftArm = builder.getPart("leftArm");
@@ -429,18 +271,18 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             rightArm.pitch.setEnabled(false);
             rightArm.yaw.setEnabled(false);
             rightArm.roll.setEnabled(false);
-            currentAnimation = builder.build();
+            MAIN_LAYER.currentAnimation = builder.build();
         } else if (leftHand == MAIN_HAND) {
             leftArm.pitch.setEnabled(false);
             leftArm.yaw.setEnabled(false);
             leftArm.roll.setEnabled(false);
-            currentAnimation = builder.build();
+            MAIN_LAYER.currentAnimation = builder.build();
         }
 
     }
 
     public void disableOffArm() {
-        builder = currentAnimation.mutableCopy();
+        builder = MAIN_LAYER.currentAnimation.mutableCopy();
         var rightArm = builder.getPart("rightArm");
         assert rightArm != null;
         var leftArm = builder.getPart("leftArm");
@@ -451,41 +293,41 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             rightArm.pitch.setEnabled(false);
             rightArm.yaw.setEnabled(false);
             rightArm.roll.setEnabled(false);
-            currentAnimation = builder.build();
+            MAIN_LAYER.currentAnimation = builder.build();
         } else if (leftHand == OFF_HAND) {
             leftArm.pitch.setEnabled(false);
             leftArm.yaw.setEnabled(false);
             leftArm.roll.setEnabled(false);
-            currentAnimation = builder.build();
+            MAIN_LAYER.currentAnimation = builder.build();
         }
 
     }
-    
+
     public void disableRightArm() {
-        builder = currentAnimation.mutableCopy();
+        builder = MAIN_LAYER.currentAnimation.mutableCopy();
         var rightArm = builder.getPart("rightArm");
         assert rightArm != null;
         rightArm.pitch.setEnabled(false);
         rightArm.yaw.setEnabled(false);
         rightArm.roll.setEnabled(false);
-        currentAnimation = builder.build();
+        MAIN_LAYER.currentAnimation = builder.build();
 
     }
 
-    
+
     public void disableLeftArm() {
-        builder = currentAnimation.mutableCopy();
+        builder = MAIN_LAYER.currentAnimation.mutableCopy();
         var leftArm = builder.getPart("leftArm");
         assert leftArm != null;
         leftArm.pitch.setEnabled(false);
         leftArm.yaw.setEnabled(false);
         leftArm.roll.setEnabled(false);
-        currentAnimation = builder.build();
+        MAIN_LAYER.currentAnimation = builder.build();
     }
 
 
     public void disableBothArms() {
-        builder = currentAnimation.mutableCopy();
+        builder = MAIN_LAYER.currentAnimation.mutableCopy();
         var rightArm = builder.getPart("rightArm");
         assert rightArm != null;
         var leftArm = builder.getPart("leftArm");
@@ -496,69 +338,73 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         leftArm.pitch.setEnabled(false);
         leftArm.yaw.setEnabled(false);
         leftArm.roll.setEnabled(false);
-        currentAnimation = builder.build();
+        MAIN_LAYER.currentAnimation = builder.build();
     }
 
     public void disableRightArmOverlayPos() {
-        builder = currentAnimation.mutableCopy();
+        builder = MAIN_LAYER.currentAnimation.mutableCopy();
         var rightArm = builder.getPart("rightArm");
         assert rightArm != null;
         rightArm.x.setEnabled(false);
         rightArm.y.setEnabled(false);
         rightArm.z.setEnabled(false);
-        currentAnimation = builder.build();
+        MAIN_LAYER.currentAnimation = builder.build();
     }
 
     public void disableLeftArmOverlayPos() {
-        builder = currentAnimation.mutableCopy();
+        builder = MAIN_LAYER.currentAnimation.mutableCopy();
         var leftArm = builder.getPart("leftArm");
         assert leftArm != null;
         leftArm.x.setEnabled(false);
         leftArm.y.setEnabled(false);
         leftArm.z.setEnabled(false);
-        currentAnimation = builder.build();
+        MAIN_LAYER.currentAnimation = builder.build();
     }
 
-    public void disableAnimation() {
-        currentAnimation = blank_loop;
-        currentAnimationId = "blank_loop";
-
-    }
-
-    public void disableOverlay() {
-        currentOverlay = blank_loop;
-        currentOverlayId = "blank_loop";
-    }
 
     public void loopedToolAnimation(KeyframeAnimation overlay, KeyframeAnimation overlay_sneak, String id, int fade, float speed, int priority) {
-
-            overlayFadeTime = fade;
-            overlayAnimationSpeed = speed;
-            overlayPriority = priority;
-            OverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
-
-            if (crouched) {
-                currentOverlay = overlay_sneak;
-                currentOverlayId = id + "_sneak";
-            } else {
-                currentOverlay = overlay;
-                currentOverlayId = id;
-            }
+        OVERLAY_LAYER.fadeTime = fade;
+        OVERLAY_LAYER.animationSpeed = speed;
+        OVERLAY_LAYER.priority = priority;
+        OVERLAY_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
+        if (crouched) {
+            OVERLAY_LAYER.currentAnimation = overlay_sneak;
+            OVERLAY_LAYER.currentAnimationId = id + "_sneak";
+        } else {
+            OVERLAY_LAYER.currentAnimation = overlay;
+            OVERLAY_LAYER.currentAnimationId = id;
+        }
 
 
     }
+
+
+//    public Boolean attackHandIsRight() {
+//        return pl
+//    }
 
 
     public void genericHandswing() {
-        if (preferredHand.equals(MAIN_HAND)) {
-            disableMainArm();
-        } else if (preferredHand.equals(OFF_HAND)){
-            disableOffArm();
+        if (rightHand.equals(MAIN_HAND)) {
+            OVERLAY_LAYER.currentAnimation = GENERIC_HANDSWING;
+            OVERLAY_LAYER.currentAnimationId = "generic_handswing_right";
+            OVERLAY_LAYER.mirrorModifier.setEnabled(false);
+            OVERLAY_LAYER.animationSpeed = 2;
+            OVERLAY_LAYER.fadeTime = 2;
+            RightHandSwingModifier.enabled = true;
+
         }
-        currentAnimationId = "handswinging" + currentAnimationId;
-        modifyId = "handswinging";
-        fadeTime = 0;
-        priority = 0;
+        else if (leftHand.equals(MAIN_HAND)){
+            OVERLAY_LAYER.currentAnimation = GENERIC_HANDSWING;
+            OVERLAY_LAYER.currentAnimationId = "generic_handswing_left";
+            OVERLAY_LAYER.mirrorModifier.setEnabled(true);
+            OVERLAY_LAYER.animationSpeed = 2;
+            OVERLAY_LAYER.fadeTime = 2;
+            LeftHandSwingModifier.enabled = true;
+
+        }
+
+
 
     }
 
@@ -573,36 +419,6 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
     }
 
 
-
-    /*AdjustmentModifier ShieldModifier = new AdjustmentModifier((partName) -> {
-        float rotationX = 0;
-        float rotationY = 0;
-        float rotationZ = 0;
-        float offsetX = 0;
-        float offsetY = 0;
-        float offsetZ = 0;
-        var pitch = config.getTest().pitch;
-        var yaw = config.getTest().yaw;
-        var roll = config.getTest().roll;
-        var x = config.getTest().x;
-        var y = config.getTest().y;
-        var z = config.getTest().z;
-        if (partName.equals("rightItem")) {
-            rotationX = pitch;
-            rotationY = yaw;
-            rotationZ = roll;
-            offsetX = x;
-            offsetY = y;
-            offsetZ = z;
-        } else {
-            return Optional.empty();
-        }
-
-        return Optional.of(new AdjustmentModifier.PartModifier(
-                new Vec3f(rotationX, rotationY, rotationZ),
-                new Vec3f(offsetX, offsetY, offsetZ))
-        );
-    });*/
 
 
     AdjustmentModifier RightBowModifier = new AdjustmentModifier((partName) -> {
@@ -667,64 +483,61 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         );
     });
 
-    AdjustmentModifier ParagliderModifier = new AdjustmentModifier((partName) -> {
+    AdjustmentModifier RightHandSwingModifier = new AdjustmentModifier((partName) -> {
         float rotationX = 0;
         float rotationY = 0;
         float rotationZ = 0;
         float offsetX = 0;
         float offsetY = 0;
         float offsetZ = 0;
-
-        switch (partName) {
-            case "torso" -> {
-                if(isMovingBackwards){
-                    rotationX = (float) (-0.75f * moveSpeed);
-                } else {
-                    rotationX = (float) (0.75f * moveSpeed);
-
-                }
-            }
-            case "rightLeg","leftLeg" -> {
-                if(isMovingBackwards){
-                    rotationX = (float) (-moveSpeed * 1.5);
-                    offsetY = (float) (-moveSpeed * 3.5);
-                    offsetZ = (float) (-moveSpeed * 7);
-                } else {
-                    rotationX = (float) (moveSpeed * 1.5);
-                    offsetY = (float) (-moveSpeed * 3.5);
-                    offsetZ = (float) (moveSpeed * 7);
-
-                }
-            }
-
-
-            default -> {
-                return Optional.empty();
-            }
+        var pitch = getPitch();
+        pitch = (float) Math.toRadians(pitch);
+        if (partName.equals("rightArm")) {
+            rotationX = pitch;
+        } else {
+            return Optional.empty();
         }
-
 
         return Optional.of(new AdjustmentModifier.PartModifier(
                 new Vec3f(rotationX, rotationY, rotationZ),
                 new Vec3f(offsetX, offsetY, offsetZ))
         );
     });
-    
-    SpeedModifier OverlaySpeedModifier = new SpeedModifier();
-    SpeedModifier AnimationSpeedModifier = new SpeedModifier();
 
-    MirrorModifier OverlayMirrorModifier = new MirrorModifier();
-    MirrorModifier PassiveOverlayMirrorModifier = new MirrorModifier();
-    MirrorModifier AnimationMirrorModifier = new MirrorModifier();
+    AdjustmentModifier LeftHandSwingModifier = new AdjustmentModifier((partName) -> {
+        float rotationX = 0;
+        float rotationY = 0;
+        float rotationZ = 0;
+        float offsetX = 0;
+        float offsetY = 0;
+        float offsetZ = 0;
+        var pitch = getPitch();
+        pitch = (float) Math.toRadians(pitch);
+        if (partName.equals("leftArm")) {
+            rotationX = pitch;
+        } else {
+            return Optional.empty();
+        }
 
-    ModifierLayer<IAnimation> animationContainer = modAnimationContainer;
-    ModifierLayer<IAnimation> animationContainer2 = modAnimationContainer2;
-    ModifierLayer<IAnimation> passiveAnimationContainer = modPassiveAnimationContainer;
+        return Optional.of(new AdjustmentModifier.PartModifier(
+                new Vec3f(rotationX, rotationY, rotationZ),
+                new Vec3f(offsetX, offsetY, offsetZ))
+        );
+    });
+
+    ModifierLayer<IAnimation> mainContainer = MAIN_LAYER.animationContainer;
+    ModifierLayer<IAnimation> overlayContainer = OVERLAY_LAYER.animationContainer;
+    ModifierLayer<IAnimation> passiveContainer = PASSIVE_LAYER.animationContainer;
+    ModifierLayer<IAnimation> lanternContainer = LANTERN_LAYER.animationContainer;
+    ModifierLayer<IAnimation> torchContainer = TORCH_LAYER.animationContainer;
 
     public void animate() {
         AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) (Object)this;
 
         animationTick++;
+
+        LeftHandSwingModifier.enabled = false;
+        RightHandSwingModifier.enabled = false;
 
         if (getMainArm() == Arm.LEFT) {
             rightHand = OFF_HAND;
@@ -735,8 +548,11 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         }
 
 
-        AnimationSpeedModifier.speed = animationSpeed;
-        OverlaySpeedModifier.speed = overlayAnimationSpeed;
+        MAIN_LAYER.speedModifier.speed = MAIN_LAYER.animationSpeed;
+        OVERLAY_LAYER.speedModifier.speed = OVERLAY_LAYER.animationSpeed;
+        PASSIVE_LAYER.speedModifier.speed = PASSIVE_LAYER.animationSpeed;
+        LANTERN_LAYER.speedModifier.speed = LANTERN_LAYER.animationSpeed;
+        TORCH_LAYER.speedModifier.speed = TORCH_LAYER.animationSpeed;
 
         byaw = bodyYaw;
         hyaw = headYaw;
@@ -754,11 +570,30 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
 
-        currentOverlay = blank_loop;
-        currentOverlayId = "blank_loop";
-        overlayFadeTime = 10;
-        overlayAnimationSpeed = 1;
-        overlayPriority = 0;
+        OVERLAY_LAYER.currentAnimation = BLANK_LOOP;
+        OVERLAY_LAYER.currentAnimationId = "blank_loop";
+        OVERLAY_LAYER.fadeTime = 10;
+        OVERLAY_LAYER.animationSpeed = 1;
+        OVERLAY_LAYER.priority = 0;
+
+        PASSIVE_LAYER.currentAnimation = BLANK_LOOP;
+        PASSIVE_LAYER.currentAnimationId = "blank_loop";
+        PASSIVE_LAYER.fadeTime = 10;
+        PASSIVE_LAYER.animationSpeed = 1;
+        PASSIVE_LAYER.priority = 0;
+
+        LANTERN_LAYER.currentAnimation = BLANK_LOOP;
+        LANTERN_LAYER.currentAnimationId = "blank_loop";
+        LANTERN_LAYER.fadeTime = 10;
+        LANTERN_LAYER.animationSpeed = 1;
+        LANTERN_LAYER.priority = 0;
+
+        TORCH_LAYER.currentAnimation = BLANK_LOOP;
+        TORCH_LAYER.currentAnimationId = "blank_loop";
+        TORCH_LAYER.fadeTime = 10;
+        TORCH_LAYER.animationSpeed = 1;
+        TORCH_LAYER.priority = 0;
+
 
         crouched = isInSneakingPose();
 
@@ -771,14 +606,12 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
         if(flychecker > 10) {
-            currentAnimation = idle_creative_flying;
-            currentAnimationId = "idle_creative_flying";
-            if (!config.getIdleCreativeFlying().enabled) {
-                disableAnimation();
-            }
-            fadeTime = 5;
-            animationSpeed = config.getIdleCreativeFlying().speedMultiplier;
-            priority = 0;
+            MAIN_LAYER.currentAnimation = IDLE_CREATIVE_FLYING;
+            MAIN_LAYER.currentAnimationId = "idle_creative_flying";
+
+            MAIN_LAYER.fadeTime = 5;
+            MAIN_LAYER.animationSpeed = 1;
+            MAIN_LAYER.priority = 0;
         }
         else {
             if(!crouched) {
@@ -788,71 +621,61 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                     {
 
                         if (((3 / 0.28) * moveSpeed) > 1) {
-                            animationSpeed = (float) ((3 / 0.28) * moveSpeed * config.getRunning().speedMultiplier);
+                            MAIN_LAYER.animationSpeed = (float) ((3 / 0.28) * moveSpeed);
                         } else {
-                            animationSpeed = 1 * config.getRunning().speedMultiplier;
+                            MAIN_LAYER.animationSpeed = 1 ;
                         }
-                        currentAnimation = running;
-                        currentAnimationId = "running";
-                        if (!config.getRunning().enabled) {
-                            disableAnimation();
-                        }
-                        fadeTime = 5;
-                        priority = 0;
+                        MAIN_LAYER.currentAnimation = RUNNING;
+                        MAIN_LAYER.currentAnimationId = "running";
+                        MAIN_LAYER.fadeTime = 5;
+                        MAIN_LAYER.priority = 0;
 
                     }
                     // Walking
                     else if(moveSpeed > 0)
                     {
                         if (((9 / 0.22) * moveSpeed) > 1) {
-                            animationSpeed = (float) ((9 / 0.22) * moveSpeed * config.getWalking().speedMultiplier);
+                            MAIN_LAYER.animationSpeed = (float) ((9 / 0.22) * moveSpeed);
                         } else {
-                            animationSpeed = 2 * config.getWalking().speedMultiplier;
+                            MAIN_LAYER.animationSpeed = 2;
                         }
-                        currentAnimation = walking;
-                        currentAnimationId = "walking";
+                        MAIN_LAYER.currentAnimation = WALKING;
+                        MAIN_LAYER.currentAnimationId = "walking";
 //                    LOGGER.info("Walking");
-                        if (!config.getWalking().enabled) {
-                            disableAnimation();
-                        }
-                        fadeTime = 7;
-                        priority = 0;
+
+                        MAIN_LAYER.fadeTime = 7;
+                        MAIN_LAYER.priority = 0;
                     }
                     // Standing and Turning
                     else
                     {
                         if (turn != 0) {
-                            currentAnimation = (turn < 0) ? turn_left : turn_right;
-                            currentAnimationId = (turn < 0) ? "turn_left" : "turn_right";
-                            priority = 0;
+                            MAIN_LAYER.currentAnimation = (turn < 0) ? TURN_LEFT : TURN_RIGHT;
+                            MAIN_LAYER.currentAnimationId = (turn < 0) ? "turn_left" : "turn_right";
+                            MAIN_LAYER.priority = 0;
 
-                            if (!config.getTurningStanding().enabled) {
-                                disableAnimation();
-                            }
+
                             if ((abs((((float) 1 / 2) * turn)) > 5)) {
-                                animationSpeed = 2f * config.getTurningStanding().speedMultiplier;
+                                MAIN_LAYER.animationSpeed = 2f;
                             } else {
-                                animationSpeed = abs((((float) 1 / 2) * turn) * config.getTurningStanding().speedMultiplier);
+                                MAIN_LAYER.animationSpeed = abs((((float) 1 / 2) * turn) );
                             }
 
                         } else {
-                            currentAnimation = idle_standing;
-                            currentAnimationId = "idle_standing";
-                            if (!config.getIdleStanding().enabled) {
-                                disableAnimation();
-                            }
-                            if (prevAnimationId.equals("idle_sneak")
-                                    || prevAnimationId.equals("walking_sneak")
-                                    || prevAnimationId.equals("jump")
+                            MAIN_LAYER.currentAnimation = IDLE_STANDING;
+                            MAIN_LAYER.currentAnimationId = "idle_standing";
+
+                            if (MAIN_LAYER.prevAnimationId.equals("idle_sneak")
+                                    || MAIN_LAYER.prevAnimationId.equals("walking_sneak")
+                                    || MAIN_LAYER.prevAnimationId.equals("jump")
                             ) {
 
-                                fadeTime = 1;
+                                MAIN_LAYER.fadeTime = 1;
                             } else {
-                                fadeTime = 10;
+                                MAIN_LAYER.fadeTime = 10;
                             }
-                            animationSpeed = config.getIdleStanding().speedMultiplier;
-
-                            priority = 0;
+                            MAIN_LAYER.animationSpeed = 1;
+                            MAIN_LAYER.priority = 0;
                         }
                     }
                 }
@@ -860,79 +683,71 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 else
                 {
                     if (((4 / 0.22) * moveSpeed) > 1) {
-                        animationSpeed = (float) ((4 / 0.22) * moveSpeed * config.getWalkingBackwards().speedMultiplier);
+                        MAIN_LAYER.animationSpeed = (float) ((4 / 0.22) * moveSpeed);
                     } else {
-                        animationSpeed = 2 * config.getWalkingBackwards().speedMultiplier;
+                        MAIN_LAYER.animationSpeed = 2;
                     }
                     if (vy > 0) {
-                        animationSpeed = 0.1F;
+                        MAIN_LAYER.animationSpeed = 0.1F;
                     }
-                    currentAnimation = walking_backwards;
-                    currentAnimationId = "walking_backwards";
-                    if (!config.getWalkingBackwards().enabled) {
-                        disableAnimation();
-                    }
-                    fadeTime = 7;
-                    priority = 0;
+                    MAIN_LAYER.currentAnimation = WALKING_BACKWARDS;
+                    MAIN_LAYER.currentAnimationId = "walking_backwards";
+
+                    MAIN_LAYER.fadeTime = 7;
+                    MAIN_LAYER.priority = 0;
 
                 }
             }
             else {
                 // Standing while Sneaking
                 if(moveSpeed == 0) {
-                    currentAnimation = idle_sneak;
-                    currentAnimationId = "idle_sneak";
-                    if (!config.getIdleSneaking().enabled) {
-                        disableAnimation();
-                    }
-                    animationSpeed = 1 * config.getIdleSneaking().speedMultiplier;
+                    MAIN_LAYER.currentAnimation = IDLE_SNEAK;
+                    MAIN_LAYER.currentAnimationId = "idle_sneak";
 
-                    if (prevAnimationId.equals("walking_sneak") || prevAnimationId.equals("walking_sneak_backwards")) {
-                        fadeTime = 10;
+                    MAIN_LAYER.animationSpeed = 1;
+
+                    if (MAIN_LAYER.prevAnimationId.equals("walking_sneak") || MAIN_LAYER.prevAnimationId.equals("walking_sneak_backwards")) {
+                        MAIN_LAYER.fadeTime = 10;
                     } else {
-                        fadeTime = 1;
+                        MAIN_LAYER.fadeTime = 1;
                     }
-                    priority = 0;
+                    MAIN_LAYER.priority = 0;
                 }
                 // Walking while Sneaking
                 else {
                     if(!isMovingBackwards) {
-                        currentAnimation = walking_sneak;
-                        currentAnimationId = "walking_sneak";
-                        if (!config.getIdleSneaking().enabled) {
-                            disableAnimation();
+                        MAIN_LAYER.currentAnimation = WALKING_SNEAK;
+                        MAIN_LAYER.currentAnimationId = "walking_sneak";
+
+                        MAIN_LAYER.animationSpeed = (float) ((2 / 0.06) * moveSpeed);
+                        if (MAIN_LAYER.animationSpeed < 1) {
+                            MAIN_LAYER.animationSpeed = 1 ;
                         }
-                        animationSpeed = (float) ((2 / 0.06) * moveSpeed * config.getWalkingSneak().speedMultiplier);
-                        if (animationSpeed < 1) {
-                            animationSpeed = 1 * config.getWalkingSneak().speedMultiplier;
-                        }
-                        if (prevAnimationId.equals("idle_sneak") || prevAnimationId.equals("walking_sneak_backwards")) {
-                            fadeTime = 7;
+                        if (MAIN_LAYER.prevAnimationId.equals("idle_sneak") || MAIN_LAYER.prevAnimationId.equals("walking_sneak_backwards")) {
+                            MAIN_LAYER.fadeTime = 7;
                         } else {
-                            fadeTime = 1;
+                            MAIN_LAYER.fadeTime = 1;
                         }
-                        priority = 0;
+                        MAIN_LAYER.priority = 0;
 
                     }
                     // Walking backwards while Sneaking
                     else
                     {
-                        currentAnimation = walking_sneak_backwards;
-                        currentAnimationId = "walking_sneak_backwards";
-                        if (!config.getWalkingSneakBackwards().enabled) {
-                            disableAnimation();
+                        MAIN_LAYER.currentAnimation = WALKING_SNEAK_BACKWARDS;
+                        MAIN_LAYER.currentAnimationId = "walking_sneak_backwards";
+
+                        MAIN_LAYER.animationSpeed = (float) ((2 / 0.06) * moveSpeed );
+                        if (MAIN_LAYER.animationSpeed < 1) {
+                            MAIN_LAYER.animationSpeed = 1 ;
                         }
-                        animationSpeed = (float) ((2 / 0.06) * moveSpeed * config.getWalkingSneakBackwards().speedMultiplier);
-                        if (animationSpeed < 1) {
-                            animationSpeed = 1 * config.getWalkingSneakBackwards().speedMultiplier;
-                        }
-                        if (prevAnimationId.equals("idle_sneak")
-                                || prevAnimationId.equals("walking_sneak")) {
-                            fadeTime = 7;
+                        if (MAIN_LAYER.prevAnimationId.equals("idle_sneak")
+                                || MAIN_LAYER.prevAnimationId.equals("walking_sneak")) {
+                            MAIN_LAYER.fadeTime = 7;
                         } else {
-                            fadeTime = 1;
+                            MAIN_LAYER.fadeTime = 1;
                         }
-                        priority = 0;
+                        MAIN_LAYER.priority = 0;
                     }
                 }
 
@@ -944,8 +759,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
         //jumping
         if (vy > 0 && !isOnGround()) {
-            animationSpeed = currentAnimationId.equals("walking") ? 4 : 1;
-            priority = 0;
+            MAIN_LAYER.animationSpeed = MAIN_LAYER.currentAnimationId.equals("walking") ? 4 : 1;
+            MAIN_LAYER.priority = 0;
         }
 
 
@@ -954,33 +769,31 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         if (vy < -0.6 && !hasVehicle() && !isOnGround()) {
 
             if(getMainHandStack().getItem() instanceof MaceItem ) {
-                currentAnimation = falling_mace;
-                currentAnimationId = "falling_mace";
+                MAIN_LAYER.currentAnimation = FALLING_MACE;
+                MAIN_LAYER.currentAnimationId = "falling_mace";
             } else {
-                currentAnimation = falling;
-                currentAnimationId = "falling";
+                MAIN_LAYER.currentAnimation = FALLING;
+                MAIN_LAYER.currentAnimationId = "falling";
             }
 
-            if (!config.getFalling().enabled) {
-                disableAnimation();
-            }
-            fadeTime = 8;
-            animationSpeed = 1 * config.getFalling().speedMultiplier;
-            priority = 0;
+
+            MAIN_LAYER.fadeTime = 8;
+            MAIN_LAYER.animationSpeed = 1;
+            MAIN_LAYER.priority = 0;
         } else if (!isOnGround()) {
-            animationSpeed = (currentAnimationId.equals("walking")) ? 4 : 1;
-            priority = 0;
+            MAIN_LAYER.animationSpeed = (MAIN_LAYER.currentAnimationId.equals("walking")) ? 4 : 1;
+            MAIN_LAYER.priority = 0;
         }
 
         //climbing
         if (!isOnGround() && !hasVehicle()) {
             var block = clientWorld.getBlockState(getBlockPos()).getBlock();
             if ((block instanceof LadderBlock || block instanceof VineBlock)) {
-                animationSpeed = 3 * config.getClimbing().speedMultiplier;
-                fadeTime = 7;
-                priority = 0;
+                MAIN_LAYER.animationSpeed = 3 ;
+                MAIN_LAYER.fadeTime = 7;
+                MAIN_LAYER.priority = 0;
                 if (!(getActiveItem().getItem() instanceof BowItem)){
-                    blockStateString = String.valueOf(clientWorld.getBlockState(getBlockPos()));
+                    String blockStateString = String.valueOf(clientWorld.getBlockState(getBlockPos()));
                     byaw = getBodyYaw();
                     hyaw = getHeadYaw();
                     if (blockStateString.contains("facing=north") || blockStateString.contains("south=true")) {
@@ -1012,21 +825,21 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
                 if (isClimbing() && vy > 0) {
                     if (crouched) {
-                        currentAnimation = climbing_sneak;
-                        currentAnimationId = "climbing_sneak";
+                        MAIN_LAYER.currentAnimation = CLIMBING_SNEAK;
+                        MAIN_LAYER.currentAnimationId = "climbing_sneak";
                     } else {
-                        currentAnimation = climbing;
-                        currentAnimationId = "climbing";
+                        MAIN_LAYER.currentAnimation = CLIMBING;
+                        MAIN_LAYER.currentAnimationId = "climbing";
                     }
                 } else if (isClimbing() && vy < 0) {
-                    currentAnimation = climbing_backwards;
-                    currentAnimationId = "climbing_backwards";
+                    MAIN_LAYER.currentAnimation = CLIMBING_BACKWARDS;
+                    MAIN_LAYER.currentAnimationId = "climbing_backwards";
                 } else if (crouched) {
-                    currentAnimation = idle_climbing_sneak;
-                    currentAnimationId = "idle_climbing_sneak";
+                    MAIN_LAYER.currentAnimation = IDLE_CLIMBING_SNEAK;
+                    MAIN_LAYER.currentAnimationId = "idle_climbing_sneak";
                 } else {
-                    currentAnimation = idle_climbing;
-                    currentAnimationId = "idle_climbing";
+                    MAIN_LAYER.currentAnimation = IDLE_CLIMBING;
+                    MAIN_LAYER.currentAnimationId = "idle_climbing";
                 }
             } else if ((block instanceof TwistingVinesPlantBlock
                     || block instanceof WeepingVinesPlantBlock
@@ -1034,9 +847,9 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                     || block instanceof WeepingVinesBlock
                     || block instanceof ScaffoldingBlock)
                     ) {
-                animationSpeed = 3 * config.getClimbing().speedMultiplier;
-                fadeTime = 7;
-                priority = 0;
+                MAIN_LAYER.animationSpeed = 3;
+                MAIN_LAYER.fadeTime = 7;
+                MAIN_LAYER.priority = 0;
                 if (!(getActiveItem().getItem() instanceof BowItem)) {
                     byaw = ((float) toDegrees(atan2((getBlockPos().getZ() + 0.5 - pos.z), (getBlockPos().getX()) + 0.5 - pos.x)) - 90);
                     hyaw = headYaw;
@@ -1055,83 +868,75 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
                 if (isClimbing()) {
                     if (vy > 0) {
-                        currentAnimation = crouched ? climbing_sneak : climbing;
-                        currentAnimationId = crouched ? "climbing_sneak" : "climbing";
+                        MAIN_LAYER.currentAnimation = crouched ? CLIMBING_SNEAK : CLIMBING;
+                        MAIN_LAYER.currentAnimationId = crouched ? "climbing_sneak" : "climbing";
                     } else if (vy < 0) {
-                        currentAnimation = climbing_backwards;
-                        currentAnimationId = "climbing_backwards";
+                        MAIN_LAYER.currentAnimation = CLIMBING_BACKWARDS;
+                        MAIN_LAYER.currentAnimationId = "climbing_backwards";
                     } else {
-                        currentAnimation = crouched ? idle_climbing_sneak : idle_climbing;
-                        currentAnimationId = crouched ? "idle_climbing_sneak" : "idle_climbing";
+                        MAIN_LAYER.currentAnimation = crouched ? IDLE_CLIMBING_SNEAK : IDLE_CLIMBING;
+                        MAIN_LAYER.currentAnimationId = crouched ? "idle_climbing_sneak" : "idle_climbing";
                     }
                 } else {
-                    currentAnimation = crouched ? idle_climbing_sneak : idle_climbing;
-                    currentAnimationId = crouched ? "idle_climbing_sneak" : "idle_climbing";
+                    MAIN_LAYER.currentAnimation = crouched ? IDLE_CLIMBING_SNEAK : IDLE_CLIMBING;
+                    MAIN_LAYER.currentAnimationId = crouched ? "idle_climbing_sneak" : "idle_climbing";
                 }
 
             } else if (block instanceof PowderSnowBlock) {
-                fadeTime = 7;
-                priority = 0;
+                MAIN_LAYER.fadeTime = 7;
+                MAIN_LAYER.priority = 0;
 
                 if ((String.valueOf(getArmorItems())).contains("leather_boots")) {
                     if (vy > 0) {
                         if (crouched) {
-                            currentAnimation = climbing_sneak;
-                            currentAnimationId = "climbing_sneak";
+                            MAIN_LAYER.currentAnimation = CLIMBING_SNEAK;
+                            MAIN_LAYER.currentAnimationId = "climbing_sneak";
                         } else {
-                            currentAnimation = climbing;
-                            currentAnimationId = "climbing";
+                            MAIN_LAYER.currentAnimation = CLIMBING;
+                            MAIN_LAYER.currentAnimationId = "climbing";
                         }
                     } else if (vy < 0) {
-                        currentAnimation = climbing_backwards;
-                        currentAnimationId = "climbing_backwards";
+                        MAIN_LAYER.currentAnimation = CLIMBING_BACKWARDS;
+                        MAIN_LAYER.currentAnimationId = "climbing_backwards";
                     } else if (crouched) {
-                        currentAnimation = idle_climbing_sneak;
-                        currentAnimationId = "idle_climbing_sneak";
+                        MAIN_LAYER.currentAnimation = IDLE_CLIMBING_SNEAK;
+                        MAIN_LAYER.currentAnimationId = "idle_climbing_sneak";
                     } else {
-                        currentAnimation = idle_climbing;
-                        currentAnimationId = "idle_climbing";
+                        MAIN_LAYER.currentAnimation = IDLE_CLIMBING;
+                        MAIN_LAYER.currentAnimationId = "idle_climbing";
                     }
                 }
             }
-            if (!config.getClimbing().enabled) {
-                disableAnimation();
-            }
+
         }
 
         //crawling
         if (isCrawling()) {
             if (moveSpeed > 0 && !isMovingBackwards){
-                currentAnimation = crawling;
-                currentAnimationId = "crawling";
-                if (!config.getCrawling().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = (float) ((2 / 0.06) * moveSpeed * config.getCrawling().speedMultiplier);
-                if (animationSpeed < 1) {
-                    animationSpeed = 1 * config.getCrawling().speedMultiplier;
+                MAIN_LAYER.currentAnimation = CRAWLING;
+                MAIN_LAYER.currentAnimationId = "crawling";
+
+                MAIN_LAYER.animationSpeed = (float) ((2 / 0.06) * moveSpeed);
+                if (MAIN_LAYER.animationSpeed < 1) {
+                    MAIN_LAYER.animationSpeed = 1;
                 }
             } else if (moveSpeed > 0){
-                currentAnimation = crawling_backwards;
-                currentAnimationId = "crawling_backwards";
-                if (!config.getCrawlingBackwards().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = (float) ((2 / 0.06) * moveSpeed * config.getCrawlingBackwards().speedMultiplier);
-                if (animationSpeed < 1) {
-                    animationSpeed = 1 * config.getCrawlingBackwards().speedMultiplier;
+                MAIN_LAYER.currentAnimation = CRAWLING_BACKWARDS;
+                MAIN_LAYER.currentAnimationId = "crawling_backwards";
+
+                MAIN_LAYER.animationSpeed = (float) ((2 / 0.06) * moveSpeed);
+                if (MAIN_LAYER.animationSpeed < 1) {
+                    MAIN_LAYER.animationSpeed = 1 ;
                 }
             } else {
-                currentAnimation = idle_crawling;
-                currentAnimationId = "idle_crawling";
-                if (!config.getIdleCrawling().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = 2 * config.getIdleCrawling().speedMultiplier;
+                MAIN_LAYER.currentAnimation = IDLE_CRAWLING;
+                MAIN_LAYER.currentAnimationId = "idle_crawling";
+
+                MAIN_LAYER.animationSpeed = 2 ;
             }
 
-            fadeTime = 7;
-            priority = 0;
+            MAIN_LAYER.fadeTime = 7;
+            MAIN_LAYER.priority = 0;
 
 
         }
@@ -1140,52 +945,42 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         //in water
         if ((isInsideWaterOrBubbleColumn() || isInLava()) && !isOnGround() && !isInSwimmingPose()){
             if (moveSpeed > 0 && !isMovingBackwards) {
-                currentAnimation = forward_in_water;
-                currentAnimationId = "forward_in_water";
-                if (!config.getForwardInWater().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = 1 * config.getForwardInWater().speedMultiplier;
-                fadeTime = 7;
-                priority = 0;
+                MAIN_LAYER.currentAnimation = FORWARD_IN_WATER;
+                MAIN_LAYER.currentAnimationId = "forward_in_water";
+
+                MAIN_LAYER.animationSpeed = 1 ;
+                MAIN_LAYER.fadeTime = 7;
+                MAIN_LAYER.priority = 0;
             } else if (moveSpeed > 0) {
-                currentAnimation = backwards_in_water;
-                currentAnimationId = "backwards_in_water";
-                if (!config.getBackwardsInWater().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = 1 * config.getBackwardsInWater().speedMultiplier;
-                fadeTime = 7;
-                priority = 0;
+                MAIN_LAYER.currentAnimation = BACKWARDS_IN_WATER;
+                MAIN_LAYER.currentAnimationId = "backwards_in_water";
+
+                MAIN_LAYER.animationSpeed = 1;
+                MAIN_LAYER.fadeTime = 7;
+                MAIN_LAYER.priority = 0;
             } else if (vy > 0) {
-                currentAnimation = up_in_water;
-                currentAnimationId = "up_in_water";
-                if (!config.getUpInWater().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = 1 * config.getUpInWater().speedMultiplier;
-                fadeTime = 7;
-                priority = 0;
+                MAIN_LAYER.currentAnimation = UP_IN_WATER;
+                MAIN_LAYER.currentAnimationId = "up_in_water";
+
+                MAIN_LAYER.animationSpeed = 1 ;
+                MAIN_LAYER.fadeTime = 7;
+                MAIN_LAYER.priority = 0;
             } else {
-                currentAnimation = idle_in_water;
-                currentAnimationId = "idle_in_water";
-                if (!config.getIdleInWater().enabled) {
-                    disableAnimation();
-                }
-                fadeTime = 5;
-                animationSpeed = 1 * config.getIdleInWater().speedMultiplier;
-                priority = 0;
+                MAIN_LAYER.currentAnimation = IDLE_IN_WATER;
+                MAIN_LAYER.currentAnimationId = "idle_in_water";
+
+                MAIN_LAYER.fadeTime = 5;
+                MAIN_LAYER.animationSpeed = 1;
+                MAIN_LAYER.priority = 0;
             }
         }
         else if (isInsideWaterOrBubbleColumn() && isInSwimmingPose()) {
-            currentAnimation = swimming;
-            currentAnimationId = "swimming";
-            if (!config.getSwimming().enabled) {
-                disableAnimation();
-            }
-            animationSpeed = 1 * config.getSwimming().speedMultiplier;
-            fadeTime = 7;
-            priority = 0;
+            MAIN_LAYER.currentAnimation = SWIMMING;
+            MAIN_LAYER.currentAnimationId = "swimming";
+
+            MAIN_LAYER.animationSpeed = 1 ;
+            MAIN_LAYER.fadeTime = 7;
+            MAIN_LAYER.priority = 0;
         }
 
 
@@ -1193,118 +988,103 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         if (hasVehicle()) {
             var vehicle = getVehicle();
             if(vehicle instanceof MinecartEntity) {
-                currentAnimation = minecart_idle;
-                currentAnimationId = "minecart_idle";
-                if (!config.getMinecartIdle().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = 1 * config.getMinecartIdle().speedMultiplier;
-                fadeTime = 2;
-                priority = 0;
+                MAIN_LAYER.currentAnimation = MINECART_IDLE;
+                MAIN_LAYER.currentAnimationId = "minecart_idle";
+
+                MAIN_LAYER.animationSpeed = 1;
+                MAIN_LAYER.fadeTime = 2;
+                MAIN_LAYER.priority = 0;
             } else if (vehicle instanceof HorseEntity
                     || vehicle instanceof SkeletonHorseEntity
                     || vehicle instanceof ZombieHorseEntity
                     || vehicle instanceof DonkeyEntity
                     || vehicle instanceof MuleEntity) {
                 if (moveSpeed > 0 && !isMovingBackwards) {
-                    currentAnimation = horse_running;
-                    currentAnimationId = "horse_running";
-                    if (!config.getHorseRunning().enabled) {
-                        disableAnimation();
-                    }
+                    MAIN_LAYER.currentAnimation = HORSE_RUNNING;
+                    MAIN_LAYER.currentAnimationId = "horse_running";
+
                 } else {
-                    fadeTime = 5;
-                    currentAnimation = horse_idle;
-                    currentAnimationId = "horse_idle";
-                    if (!config.getHorseIdle().enabled) {
-                        disableAnimation();
-                    }
+                    MAIN_LAYER.fadeTime = 5;
+                    MAIN_LAYER.currentAnimation = HORSE_IDLE;
+                    MAIN_LAYER.currentAnimationId = "horse_idle";
+
                 }
                 if (isUsingItem()) {
-                    currentAnimation = horse_idle;
-                    currentAnimationId = "horse_idle";
-                    if (!config.getHorseIdle().enabled) {
-                        disableAnimation();
-                    }
+                    MAIN_LAYER.currentAnimation = HORSE_IDLE;
+                    MAIN_LAYER.currentAnimationId = "horse_idle";
+
                 }
 
-                animationSpeed = 1 * config.getHorseRunning().speedMultiplier;
-                fadeTime = 1;
-                priority = 0;
+                MAIN_LAYER.animationSpeed = 1;
+                MAIN_LAYER.fadeTime = 1;
+                MAIN_LAYER.priority = 0;
             } else if (vehicle instanceof BoatEntity || vehicle instanceof ChestBoatEntity) {
-                boatString = String.valueOf(getVehicle());
-                currentAnimation = boat1;
-                currentAnimationId = "boat1";
-                if (!config.getBoat().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = 1 * config.getBoat().speedMultiplier;
-                fadeTime = 1;
-                priority = 0;
+//                boatString = String.valueOf(getVehicle());
+                MAIN_LAYER.currentAnimation = BOAT1;
+                MAIN_LAYER.currentAnimationId = "boat1";
+
+                MAIN_LAYER.animationSpeed = 1;
+                MAIN_LAYER.fadeTime = 1;
+                MAIN_LAYER.priority = 0;
             } else {
-                currentAnimation = horse_idle;
-                currentAnimationId = "horse_idle";
-                if (!config.getHorseIdle().enabled) {
-                    disableAnimation();
-                }
-                animationSpeed = 1 * config.getHorseIdle().speedMultiplier;
-                fadeTime = 1;
-                priority = 0;
+                MAIN_LAYER.currentAnimation = HORSE_IDLE;
+                MAIN_LAYER.currentAnimationId = "horse_idle";
+
+                MAIN_LAYER.animationSpeed = 1;
+                MAIN_LAYER.fadeTime = 1;
+                MAIN_LAYER.priority = 0;
             }
         }
 
         //elytra
         if (isFallFlying()) {
-            currentAnimation = elytra;
-            currentAnimationId = "elytra";
-            if (!config.getElytra().enabled) {
-                disableAnimation();
-            }
-            animationSpeed = 1 * config.getElytra().speedMultiplier;
-            priority = 0;
-            fadeTime = 5;
+            MAIN_LAYER.currentAnimation = ELYTRA;
+            MAIN_LAYER.currentAnimationId = "elytra";
+
+            MAIN_LAYER.animationSpeed = 1;
+            MAIN_LAYER.priority = 0;
+            MAIN_LAYER.fadeTime = 5;
         }
 
         //sleeping
         if (isSleeping()) {
-            fadeTime = 2;
-            animationSpeed = 2;
-            priority = 0;
-            disableAnimation();
+            MAIN_LAYER.fadeTime = 2;
+            MAIN_LAYER.animationSpeed = 2;
+            MAIN_LAYER.priority = 0;
+            MAIN_LAYER.disableAnimation();
 
-            currentOverlay = sleeping;
-            currentOverlayId = "sleeping";
+            OVERLAY_LAYER.currentAnimation = SLEEPING;
+            OVERLAY_LAYER.currentAnimationId = "sleeping";
 
-            if (!config.getSleeping().enabled) {
-                disableOverlay();
-            }
         }
 
         if (isUsingItem()) {
             activeItem = getActiveItem().getItem();
+
+
             if (activeItem.getComponents().contains(DataComponentTypes.FOOD)) {
                 //eating
 
 
-                if (config.getEating().enabled) {
-                    overlayFadeTime = 9;
-                    overlayAnimationSpeed = 1 * config.getEating().speedMultiplier;
-                    overlayPriority = 0;
+                if (true) {
+                    OVERLAY_LAYER.fadeTime = 9;
+                    OVERLAY_LAYER.animationSpeed = 1;
+                    OVERLAY_LAYER.priority = 0;
 
 
 
                     if (getActiveHand().equals(rightHand)) {
-                        currentOverlay = eating_right;
-                        currentOverlayId = "eating_right";
+                        OVERLAY_LAYER.currentAnimation = EATING_RIGHT;
+                        OVERLAY_LAYER.currentAnimationId = "eating_right";
 
                         disableRightArmOverlayPos();
-                        OverlayMirrorModifier.setEnabled(false);
+                        OVERLAY_LAYER.mirrorModifier.setEnabled(false);
                     } else if (getActiveHand().equals(leftHand)) {
-                        currentOverlay = eating_right;
-                        currentOverlayId = "eating_left";
+                        OVERLAY_LAYER.currentAnimation = EATING_RIGHT;
+                        OVERLAY_LAYER.currentAnimationId = "eating_left";
 
                         disableLeftArmOverlayPos();
-                        OverlayMirrorModifier.setEnabled(true);
+                        OVERLAY_LAYER.mirrorModifier.setEnabled(true);
                     }
 
 
@@ -1324,36 +1104,35 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                     disableOffArmB = true;
                     //modifyId = "spy_left";
                 }
-                fadeTime = 1;
-                priority = 0;
+                MAIN_LAYER.fadeTime = 1;
+                MAIN_LAYER.priority = 0;
             } else
             if (activeItem instanceof TridentItem) {
                 //trident
-                if (config.getTrident().enabled){
-                    overlayFadeTime = 5;
-                    overlayAnimationSpeed = config.getTrident().speedMultiplier;
-                    overlayPriority = 0;
+                if (true){
+                    OVERLAY_LAYER.fadeTime = 5;
+                    OVERLAY_LAYER.animationSpeed = 1;
 
                     if (getActiveHand().equals(rightHand)) {
                         if (crouched){
                             disableRightArmOverlayPos();
                             disableLeftArmOverlayPos();
                         } else {
-                            currentOverlay = trident;
-                            currentOverlayId = "right_trident";
+                            OVERLAY_LAYER.currentAnimation = TRIDENT_DRAW;
+                            OVERLAY_LAYER.currentAnimationId = "right_trident";
                         }
                         setBodyYaw(hyaw+55);
-                        OverlayMirrorModifier.setEnabled(false);
+                        OVERLAY_LAYER.mirrorModifier.setEnabled(false);
                     } else if (getActiveHand().equals(leftHand)) {
                         if (crouched){
                             disableRightArmOverlayPos();
                             disableLeftArmOverlayPos();
                         } else {
-                            currentOverlay = trident;
-                            currentOverlayId = "left_trident";
+                            OVERLAY_LAYER.currentAnimation = TRIDENT_DRAW;
+                            OVERLAY_LAYER.currentAnimationId = "left_trident";
                         }
                         setBodyYaw(hyaw-55);
-                        OverlayMirrorModifier.setEnabled(true);
+                        OVERLAY_LAYER.mirrorModifier.setEnabled(true);
                     }
 
                 } else {
@@ -1364,8 +1143,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                         disableOffArmB = true;
                         //modifyId = "trident_left";
                     }
-                    priority = 0;
-                    fadeTime = 1;
+                    MAIN_LAYER.priority = 0;
+                    MAIN_LAYER.fadeTime = 1;
                 }
 
 
@@ -1381,7 +1160,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                 }
 
 
-                priority = 0;
+                MAIN_LAYER.priority = 0;
             } else
             if (activeItem instanceof GoatHornItem) {
                 //goat horn
@@ -1392,62 +1171,62 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                     disableOffArmB = true;
                     //modifyId = "horn_left";
                 }
-                fadeTime = 1;
-                priority = 0;
+                MAIN_LAYER.fadeTime = 1;
+                MAIN_LAYER.priority = 0;
             } else
             if (activeItem instanceof BowItem) {
                 //bow
-                if (hasVehicle() || isCrawling() || !config.getBow().enabled) {
+                if (hasVehicle() || isCrawling()) {
                     disableRightArm();
                     disableLeftArm();
                     modifyId = "bow_idle";
-                    fadeTime = 1;
+                    MAIN_LAYER.fadeTime = 1;
 
 
                 } else
                 {
-                    overlayFadeTime = 6;
-                    overlayAnimationSpeed = 1 * config.getBow().speedMultiplier;
-                    overlayPriority = 0;
+                    OVERLAY_LAYER.fadeTime = 6;
+                    OVERLAY_LAYER.animationSpeed = 1;
+                    OVERLAY_LAYER.priority = 0;
 
 
                     if (getActiveHand().equals(rightHand)) {
                         if (crouched){
                             if(moveSpeed > 0 ) { //TODO Why does this not work tf?
-                                currentOverlay = bow_sneak_walking;
-                                currentOverlayId = "right_bow_sneak_walking";
+                                OVERLAY_LAYER.currentAnimation = BOW_SNEAK_WALKING;
+                                OVERLAY_LAYER.currentAnimationId = "right_bow_sneak_walking";
                             } else {
-                                currentOverlay = bow_sneak;
-                                currentOverlayId = "right_bow_sneak";
+                                OVERLAY_LAYER.currentAnimation = BOW_SNEAK;
+                                OVERLAY_LAYER.currentAnimationId = "right_bow_sneak";
                             }
-                            overlayFadeTime = 1;
+                            OVERLAY_LAYER.fadeTime = 1;
                         } else {
-                            currentOverlay = bow_idle;
-                            currentOverlayId = "right_bow_idle";
+                            OVERLAY_LAYER.currentAnimation = BOW_IDLE;
+                            OVERLAY_LAYER.currentAnimationId = "right_bow_idle";
                         }
                         disableRightArmOverlayPos();
 
                         RightBowModifier.enabled = true;
                         setBodyYaw(hyaw-90);
-                        OverlayMirrorModifier.setEnabled(false);
+                        OVERLAY_LAYER.mirrorModifier.setEnabled(false);
                     } else if (getActiveHand().equals(leftHand)) {
                         if (crouched){
                             if(moveSpeed > 0 ) {
-                                currentOverlay = bow_sneak_walking;
-                                currentOverlayId = "left_bow_sneak_walking";
+                                OVERLAY_LAYER.currentAnimation = BOW_SNEAK_WALKING;
+                                OVERLAY_LAYER.currentAnimationId = "left_bow_sneak_walking";
                             } else {
-                                currentOverlay = bow_sneak;
-                                currentOverlayId = "left_bow_sneak";
+                                OVERLAY_LAYER.currentAnimation = BOW_SNEAK;
+                                OVERLAY_LAYER.currentAnimationId = "left_bow_sneak";
                             }
-                            overlayFadeTime = 1;
+                            OVERLAY_LAYER.fadeTime = 1;
                         } else {
-                            currentOverlay = bow_idle;
-                            currentOverlayId = "left_bow_idle";
+                            OVERLAY_LAYER.currentAnimation = BOW_IDLE;
+                            OVERLAY_LAYER.currentAnimationId = "left_bow_idle";
                         }
                         disableLeftArmOverlayPos();
                         LeftBowModifier.enabled = true;
                         setBodyYaw(hyaw+90);
-                        OverlayMirrorModifier.setEnabled(true);
+                        OVERLAY_LAYER.mirrorModifier.setEnabled(true);
                     }
                 }
 
@@ -1455,37 +1234,37 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             } else
             if (activeItem instanceof ShieldItem) {
                 //shield
-                if (config.getShield().enabled) {
-                    overlayFadeTime = 5;
-                    overlayAnimationSpeed = config.getShield().speedMultiplier;
-                    overlayPriority = 0;
+                if (true) {
+                    OVERLAY_LAYER.fadeTime = 5;
+                    OVERLAY_LAYER.animationSpeed = 1;
+                    OVERLAY_LAYER.priority = 0;
 
                     //ShieldModifier.enabled = true;
 
 
                     if (getActiveHand().equals(rightHand)) {
                         if (crouched){
-                            currentOverlay = shield_sneak;
-                            currentOverlayId = "right_shield_sneak";
-                            overlayFadeTime = 1;
+                            OVERLAY_LAYER.currentAnimation = SHIELD_SNEAK;
+                            OVERLAY_LAYER.currentAnimationId = "right_shield_sneak";
+                            OVERLAY_LAYER.fadeTime = 1;
                         } else {
-                            currentOverlay = shield;
-                            currentOverlayId = "right_shield";
+                            OVERLAY_LAYER.currentAnimation = SHIELD;
+                            OVERLAY_LAYER.currentAnimationId = "right_shield";
                         }
 
-                        OverlayMirrorModifier.setEnabled(false);
+                        OVERLAY_LAYER.mirrorModifier.setEnabled(false);
                     } else if (getActiveHand().equals(leftHand)) {
                         if (crouched){
-                            currentOverlay = shield_sneak;
-                            currentOverlayId = "left_shield_sneak";
-                            overlayFadeTime = 1;
+                            OVERLAY_LAYER.currentAnimation = SHIELD_SNEAK;
+                            OVERLAY_LAYER.currentAnimationId = "left_shield_sneak";
+                            OVERLAY_LAYER.fadeTime = 1;
                         } else {
-                            currentOverlay = shield;
-                            currentOverlayId = "left_shield";
+                            OVERLAY_LAYER.currentAnimation = SHIELD;
+                            OVERLAY_LAYER.currentAnimationId = "left_shield";
                         }
 
 
-                        OverlayMirrorModifier.setEnabled(true);
+                        OVERLAY_LAYER.mirrorModifier.setEnabled(true);
                     }
                 } else {
                     if (getActiveHand().equals(MAIN_HAND)) {
@@ -1495,8 +1274,8 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                         disableOffArmB = true;
                         //modifyId = "shield_left";
                     }
-                    priority = 0;
-                    fadeTime = 1;
+                    MAIN_LAYER.priority = 0;
+                    MAIN_LAYER.fadeTime = 1;
                 }
 
 
@@ -1527,7 +1306,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
                     //modifyId = "general_left";
                 }
 
-                priority = 0;
+                MAIN_LAYER.priority = 0;
             }
         } else {
             modifyId = "";
@@ -1536,12 +1315,12 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
         //totem
         if (((SwingTypeGetter)player).getTotemTicks() > 0) {
-            currentAnimation = totem_revive;
-            currentAnimationId = "totem_revive";
+            MAIN_LAYER.currentAnimation = TOTEM_REVIVE;
+            MAIN_LAYER.currentAnimationId = "totem_revive";
 
-            animationSpeed = 1;
-            priority = 0;
-            fadeTime = 5;
+            MAIN_LAYER.animationSpeed = 1;
+            MAIN_LAYER.priority = 0;
+            MAIN_LAYER.fadeTime = 5;
         }
 
 
@@ -1549,7 +1328,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
         //handswinging
         if(handSwinging) {
-
+//            LOGGER.info("HandswingTicks: " + handSwingTicks);
             List<ItemEntity> itemEntities = getNearbyItemEntities(player.getPos(),16.0d);
 
             for(var item : itemEntities) {
@@ -1563,63 +1342,30 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             //TODO Distinguish between using, Attacking and breaking Block
 
             if(((SwingTypeGetter)player).getDropTicks() > 0) {
-                loopedToolAnimation(drop_item, drop_item_sneak, "drop_item", 1, 1, 0);
+                loopedToolAnimation(DROP_ITEM, DROP_ITEM_SNEAK, "drop_item", 1, 1, 0);
             }
             else if(((SwingTypeGetter)player).getBlockBreakingTicks() > 0) {
 
                 //sword break
                 if (GloriousAnimConfig.hasSwordBreakAnimation(getMainHandStack().getItem()) && !isUsingItem() && preferredHand.equals(MAIN_HAND)) {
-                    overlayAnimationSpeed = 1.4f * config.getSwordAttack().speedMultiplier;
-
-                    overlayFadeTime = 0;
-                    overlayPriority = 1;
-
-                    OverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
-
-                    if (swordSeq) {
-
-                        if (crouched) {
-                            currentOverlay = sword_attack_sneak;
-                            currentOverlayId = "sword_attack_sneak";
-                        } else {
-                            currentOverlay = sword_attack;
-                            currentOverlayId = "sword_attack";
-                        }
-
-
-                    } else {
-                        if (crouched) {
-                            currentOverlay = sword_attack_sneak2;
-                            currentOverlayId = "sword_attack_sneak";
-                        } else {
-                            currentOverlay = sword_attack2;
-                            currentOverlayId = "sword_attack";
-                        }
-
-                    }
-
-                    if (!config.getSwordAttack().enabled) {
-                        disableOverlay();
-                        genericHandswing();
-                    }
-
+                    loopedToolAnimation(PICKAXE_BREAK, PICKAXE_BREAK_SNEAK, "pickaxe_break", 1, 2, 0);
 
                 }
                 //pickaxe
                 else if (GloriousAnimConfig.hasPickaxeBreakAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(pickaxe_break, pickaxe_break_sneak, "pickaxe_break", 1, 2, 0);
+                    loopedToolAnimation(PICKAXE_BREAK, PICKAXE_BREAK_SNEAK, "pickaxe_break", 1, 2, 0);
                 }
                 //axe break
                 else if (GloriousAnimConfig.hasAxeBreakAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(axe_break, axe_break_sneak, "axe_break", 1, 1.5f, 0);
+                    loopedToolAnimation(AXE_BREAK, AXE_BREAK_SNEAK, "axe_break", 1, 1.5f, 0);
                 }
                 //shovel
                 else if (GloriousAnimConfig.hasShovelBreakAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(shovel, shovel_sneak, "shovel",  1, 1.5f, 0);
+                    loopedToolAnimation(SHOVEL_BREAK, SHOVEL_BREAK_SNEAK, "shovel",  1, 1.5f, 0);
                 }
                 //hoe
                 else if (GloriousAnimConfig.hasHoeBreakAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(shovel, shovel_sneak, "hoe",  1, 1.5f, 0); //TODO ADD
+                    loopedToolAnimation(SHOVEL_BREAK, SHOVEL_BREAK_SNEAK, "hoe",  1, 1.5f, 0); //TODO ADD
                 }
                 else {
                     genericHandswing();
@@ -1627,124 +1373,188 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             }
             else {
                 //sword attack
-                if (GloriousAnimConfig.hasSwordAttackAnimation(getMainHandStack().getItem()) && !isUsingItem() && preferredHand.equals(MAIN_HAND)) {
-                    overlayAnimationSpeed = 1.4f * config.getSwordAttack().speedMultiplier;
+                if (GloriousAnimConfig.hasSwordAttackAnimation(getMainHandStack().getItem()) && !isUsingItem() && rightHand.equals(MAIN_HAND)) {
+                    OVERLAY_LAYER.animationSpeed = 1.4f ;
 
-                    overlayFadeTime = 0;
-                    overlayPriority = 1;
+                    OVERLAY_LAYER.fadeTime = 0;
+                    OVERLAY_LAYER.priority = 1;
 
-                    OverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
+                    OVERLAY_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
 
                     if (swordSeq) {
 
                         if (crouched) {
-                            currentOverlay = sword_attack_sneak;
-                            currentOverlayId = "sword_attack_sneak";
+                            OVERLAY_LAYER.currentAnimation = SWORD_ATTACK_SNEAK;
+                            OVERLAY_LAYER.currentAnimationId = "sword_attack_sneak";
                         } else {
-                            currentOverlay = sword_attack;
-                            currentOverlayId = "sword_attack";
+                            OVERLAY_LAYER.currentAnimation = SWORD_ATTACK;
+                            OVERLAY_LAYER.currentAnimationId = "sword_attack";
                         }
 
 
                     } else {
                         if (crouched) {
-                            currentOverlay = sword_attack_sneak2;
-                            currentOverlayId = "sword_attack_sneak";
+                            OVERLAY_LAYER.currentAnimation = SWORD_ATTACK_SNEAK_2;
+                            OVERLAY_LAYER.currentAnimationId = "sword_attack_sneak";
                         } else {
-                            currentOverlay = sword_attack2;
-                            currentOverlayId = "sword_attack";
+                            OVERLAY_LAYER.currentAnimation = SWORD_ATTACK_2;
+                            OVERLAY_LAYER.currentAnimationId = "sword_attack";
                         }
 
                     }
 
-                    if (!config.getSwordAttack().enabled) {
-                        disableOverlay();
-                        genericHandswing();
-                    }
+
 
 
                 }
                 //pickaxe
                 else if (GloriousAnimConfig.hasPickaxeAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(pickaxe_attack, pickaxe_attack_sneak, "pickaxe_attack", 1, 2, 0);
+                    loopedToolAnimation(PICKAXE_ATTACK, PICKAXE_ATTACK_SNEAK, "pickaxe_attack", 1, 2, 0);
                 }
                 //axe
                 else if (GloriousAnimConfig.hasAxeAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(axe, axe_sneak, "axe_attack", 1, 1.5f, 0);
+                    loopedToolAnimation(AXE_ATTACK, AXE_ATTACK_SNEAK, "axe_attack", 1, 1.5f, 0);
                 }
                 //shovel
                 else if (GloriousAnimConfig.hasShovelAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(shovel, shovel_sneak, "shovel",  1, 1.5f, 0);
+                    loopedToolAnimation(SHOVEL_ATTACK, SHOVEL_ATTACK_SNEAK, "shovel",  1, 1.5f, 0);
                 }
                 //hoe
                 else if (GloriousAnimConfig.hasHoeAttackAnimation(getMainHandStack().getItem()) && preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(shovel, shovel_sneak, "hoe",  1, 1.5f, 0); //TODO ADD
+                    loopedToolAnimation(SHOVEL_ATTACK, SHOVEL_ATTACK_SNEAK, "hoe",  1, 1.5f, 0); //TODO ADD
                 }
                 //mace
                 else if (GloriousAnimConfig.hasMaceAttackAnimation(getMainHandStack().getItem()) && !hasVehicle() && !isOnGround() &&  preferredHand.equals(MAIN_HAND)) {
-                    loopedToolAnimation(mace, mace, "mace",  3, 1.5f, 0);
-
+                    loopedToolAnimation(MACE_FALL_ATTACK, MACE_FALL_ATTACK, "mace",  3, 1.5f, 0);
                 }
                 else if (GloriousAnimConfig.hasPunchAttackAnimation(getMainHandStack().getItem())) {
-                    loopedToolAnimation(punch, punch, "punch",  1, 1.5f, 0);
+                    loopedToolAnimation(FIST_ATTACK, FIST_ATTACK, "punch",  1, 1.5f, 0);
                 }
                 else {
                     genericHandswing();
                 }
             }
 
+//            if(isUsingItem()) {
+//                OVERLAY_LAYER.animationContainer.setAnimation(null);
+//            }
 
         }
 
 
         //trident_throw
         if (((SwingTypeGetter)player).getPostTridentThrowTicks() > 0) {
-            currentOverlay = trident_throw;
-            currentOverlayId = "trident_throw";
+            OVERLAY_LAYER.currentAnimation = TRIDENT_THROW;
+            OVERLAY_LAYER.currentAnimationId = "trident_throw";
 
-            overlayAnimationSpeed = 2.0f;
-            overlayPriority = 0;
-            overlayFadeTime = 5;
+            OVERLAY_LAYER.animationSpeed = 2.0f;
+            OVERLAY_LAYER.prevPriority = 0;
+            OVERLAY_LAYER.fadeTime = 5;
         }
 
         //Lantern
-//TODO Second Overlay for passive actions like holding
         if(GloriousAnimConfig.isLanternItem(player.getOffHandStack().getItem()) && GloriousAnimConfig.isLanternItem(player.getMainHandStack().getItem())) {
-            passiveOverlay = lantern_hold_two_hands;
-            currentPassiveOverlayId = "lantern_hold_two_hands";
+
+            LANTERN_LAYER.currentAnimation = LANTERN_HOLD_TWO_HANDS;
+            LANTERN_LAYER.currentAnimationId = "lantern_hold_two_hands";
 
 
+            LANTERN_LAYER.animationSpeed = 1.0f;
+            LANTERN_LAYER.priority = 0;
+            LANTERN_LAYER.fadeTime = 5;
 
-            passiveOverlayAnimationSpeed = 1.0f;
-            passiveOverlayPriority = 0;
-            passiveOverlayFadeTime = 5;
+
         } else if(GloriousAnimConfig.isLanternItem(player.getMainHandStack().getItem())) {
-            passiveOverlay = lantern_hold;
-            currentPassiveOverlayId = "lantern_hold";
-            PassiveOverlayMirrorModifier.setEnabled(rightHand != MAIN_HAND);
 
-            passiveOverlayAnimationSpeed = 1.0f;
-            passiveOverlayPriority = 0;
-            passiveOverlayFadeTime = 5;
+            if(OVERLAY_LAYER.currentAnimationId.contains("bow")) {
+                LANTERN_LAYER.currentAnimation = BLANK_LOOP;
+                LANTERN_LAYER.currentAnimationId = "blank_loop";
+            } else {
+                LANTERN_LAYER.currentAnimation = LANTERN_HOLD;
+                LANTERN_LAYER.currentAnimationId = "lantern_hold_right";
+                LANTERN_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
+
+                LANTERN_LAYER.animationSpeed = 1.0f;
+                LANTERN_LAYER.priority = 0;
+                LANTERN_LAYER.fadeTime = 5;
+            }
+
         } else if(GloriousAnimConfig.isLanternItem(player.getOffHandStack().getItem())) {
-            passiveOverlay = lantern_hold;
-            currentPassiveOverlayId = "lantern_hold";
-            OverlayMirrorModifier.setEnabled(rightHand == MAIN_HAND);
+
+            if(OVERLAY_LAYER.currentAnimationId.contains("bow")) {
+                LANTERN_LAYER.currentAnimation = BLANK_LOOP;
+                LANTERN_LAYER.currentAnimationId = "blank_loop";
+            } else {
+                LANTERN_LAYER.currentAnimation = LANTERN_HOLD;
+                LANTERN_LAYER.currentAnimationId = "lantern_hold_left";
+                LANTERN_LAYER.mirrorModifier.setEnabled(rightHand == MAIN_HAND);
 
 
-            passiveOverlayAnimationSpeed = 1.0f;
-            passiveOverlayPriority = 0;
-            passiveOverlayFadeTime = 5;
+                LANTERN_LAYER.animationSpeed = 1.0f;
+                LANTERN_LAYER.priority = 0;
+                LANTERN_LAYER.fadeTime = 5;
+            }
+
+
         }
 
 
+        //Torch
+        if(GloriousAnimConfig.isTorchItem(player.getOffHandStack().getItem()) && GloriousAnimConfig.isTorchItem(player.getMainHandStack().getItem())) {
+            TORCH_LAYER.currentAnimation = TORCH_HOLD_TWO_HANDS;
+            TORCH_LAYER.currentAnimationId = "torch_hold_two_hands";
+
+
+            TORCH_LAYER.animationSpeed = 1.0f;
+            TORCH_LAYER.priority = 0;
+            TORCH_LAYER.fadeTime = 5;
+        } else if(GloriousAnimConfig.isTorchItem(player.getMainHandStack().getItem())) {
+
+            if(OVERLAY_LAYER.currentAnimationId.contains("bow")) {
+                TORCH_LAYER.currentAnimation = BLANK_LOOP;
+                TORCH_LAYER.currentAnimationId = "blank_loop";
+            } else {
+                TORCH_LAYER.currentAnimation = TORCH_HOLD;
+                TORCH_LAYER.currentAnimationId = "torch_hold_right";
+                TORCH_LAYER.mirrorModifier.setEnabled(rightHand != MAIN_HAND);
+
+                TORCH_LAYER.animationSpeed = 1.0f;
+                TORCH_LAYER.priority = 0;
+                TORCH_LAYER.fadeTime = 5;
+            }
+
+
+        } else if(GloriousAnimConfig.isTorchItem(player.getOffHandStack().getItem())) {
+
+            if(OVERLAY_LAYER.currentAnimationId.contains("bow")) {
+                TORCH_LAYER.currentAnimation = BLANK_LOOP;
+                TORCH_LAYER.currentAnimationId = "blank_loop";
+            } else {
+                TORCH_LAYER.currentAnimation = TORCH_HOLD;
+                TORCH_LAYER.currentAnimationId = "torch_hold_left";
+                TORCH_LAYER.mirrorModifier.setEnabled(rightHand == MAIN_HAND);
+
+
+                TORCH_LAYER.animationSpeed = 1.0f;
+                TORCH_LAYER.priority = 0;
+                TORCH_LAYER.fadeTime = 5;
+            }
+
+
+        }
+
+
+
+
+
         //region Mod Compats
+        Item item = getMainHandStack().getItem();
         if (!getMainHandStack().isEmpty()) {
-            item = getMainHandStack().getItem();
+
 
             if (SWORDBLOCKING_COMPAT) {
                 if (SwordBlockingCheck.check(this)) {
-                    disableOverlay();
+                    OVERLAY_LAYER.disableAnimation();
                     disableMainArmB = true;
                     //modifyId = "sword_block";
                     //if (!Objects.equals(prevModifyId, modifyId)) {
@@ -1755,7 +1565,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
             if (OLDCOMBATMOD_COMPAT) {
                 if (OldCombatModCheck.check(this)) {
-                    disableOverlay();
+                    OVERLAY_LAYER.disableAnimation();
                     disableMainArmB = true;
                     //modifyId = "sword_block";
                     //if (!Objects.equals(prevModifyId, modifyId)) {
@@ -1834,7 +1644,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             disableRightArmB = false;
             modifyId = "disable_right";
             if (!Objects.equals(prevModifyId, modifyId)) {
-                fadeTime = 1;
+                MAIN_LAYER.fadeTime = 1;
             }
         }
         if (disableLeftArmB) {
@@ -1842,7 +1652,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             disableLeftArmB = false;
             modifyId = "disable_left";
             if (!Objects.equals(prevModifyId, modifyId)) {
-                fadeTime = 1;
+                MAIN_LAYER.fadeTime = 1;
             }
         }
         if (disableMainArmB) {
@@ -1850,7 +1660,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             disableMainArmB = false;
             modifyId = "disable_main";
             if (!Objects.equals(prevModifyId, modifyId)) {
-                fadeTime = 1;
+                MAIN_LAYER.fadeTime = 1;
             }
         }
         if (disableOffArmB) {
@@ -1858,7 +1668,7 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             disableOffArmB = false;
             modifyId = "disable_off";
             if (!Objects.equals(prevModifyId, modifyId)) {
-                fadeTime = 1;
+                MAIN_LAYER.fadeTime = 1;
             }
         }
         if (disableArms) {
@@ -1866,16 +1676,16 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
             disableArms = false;
             modifyId = "disable_both";
             if (!Objects.equals(prevModifyId, modifyId)) {
-                fadeTime = 1;
+                MAIN_LAYER.fadeTime = 1;
             }
 
         }
         if (disableAnimationB) {
-            disableAnimation();
+            MAIN_LAYER.disableAnimation();
             disableAnimationB = false;
         }
         if (disableOverlayB) {
-            disableOverlay();
+            OVERLAY_LAYER.disableAnimation();
             disableAnimationB = false;
         }
 
@@ -1885,15 +1695,15 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
 
 
         //region Apply Current Animation
-        if ((!Objects.equals(currentAnimationId, prevAnimationId) && priority >= prevPriority) || !animationContainer.isActive() || !Objects.equals(modifyId, prevModifyId)) {
+        if ((!Objects.equals(MAIN_LAYER.currentAnimationId, MAIN_LAYER.prevAnimationId) && MAIN_LAYER.priority >= MAIN_LAYER.prevPriority) || !mainContainer.isActive() || !Objects.equals(modifyId, prevModifyId)) {
 
-            animationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeTime, INOUTSINE), new KeyframeAnimationPlayer(currentAnimation));
+            mainContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(MAIN_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(MAIN_LAYER.currentAnimation));
             animationTick = 0;
 
-            prevAnimationId = currentAnimationId;
-            prevAnimation = currentAnimation;
+            MAIN_LAYER.prevAnimationId = MAIN_LAYER.currentAnimationId;
+            MAIN_LAYER.prevAnimation = MAIN_LAYER.currentAnimation;
             prevModifyId = modifyId;
-            prevPriority = priority;
+            MAIN_LAYER.prevPriority = MAIN_LAYER.priority;
             modified = true;
         }
 
@@ -1904,63 +1714,92 @@ public abstract class SeriousPlayerAnimationsMixin extends PlayerEntity implemen
         //endregion
 
         //region Apply Overlay Animation
-        if ((!Objects.equals(currentOverlayId, prevOverlayId) && overlayPriority >= prevOverlayPriority) || !animationContainer2.isActive()){
+        if ((!Objects.equals(OVERLAY_LAYER.currentAnimationId, OVERLAY_LAYER.prevAnimationId) && OVERLAY_LAYER.priority >= OVERLAY_LAYER.prevPriority) || !overlayContainer.isActive()){
             RightBowModifier.enabled = false;
             LeftBowModifier.enabled = false;
             //ShieldModifier.enabled = false;
 
-            if(prevOverlayId.contains("trident") && !currentOverlayId.contains("trident")) {
-                overlayFadeTime = 3;
+            if(OVERLAY_LAYER.prevAnimationId.contains("trident") && !OVERLAY_LAYER.currentAnimationId.contains("trident")) {
+                OVERLAY_LAYER.fadeTime = 3;
             }
 
-            if(PARAGLIDER_COMPAT) {
-                if (!currentOverlayId.equals("paraglider")) {
-                    ParagliderModifier.enabled = false;
-                }
-            }
+//            if(PARAGLIDER_COMPAT) {
+//                if (!OVERLAY_LAYER.currentAnimationId.equals("paraglider")) {
+//                    ParagliderModifier.enabled = false;
+//                }
+//            }
 
 
-            if (currentOverlayId.equals("sword_attack") || currentOverlayId.equals("sword_attack_sneak")) {
+            if (OVERLAY_LAYER.currentAnimationId.equals("sword_attack") || OVERLAY_LAYER.currentAnimationId.equals("sword_attack_sneak")) {
                 swordSeq = !swordSeq;
-                animationContainer2.setAnimation(null);
-                animationContainer2.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(overlayFadeTime, INOUTSINE), new KeyframeAnimationPlayer(currentOverlay));
+                overlayContainer.setAnimation(null);
+                overlayContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(OVERLAY_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(OVERLAY_LAYER.currentAnimation));
 
-            } else {
-                animationContainer2.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(overlayFadeTime, INOUTSINE), new KeyframeAnimationPlayer(currentOverlay), true);
+            }else {
+                overlayContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(OVERLAY_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(OVERLAY_LAYER.currentAnimation), true);
             }
 
 
 
 
-            prevOverlayId = currentOverlayId;
-            prevOverlayPriority = overlayPriority;
+            OVERLAY_LAYER.prevAnimationId = OVERLAY_LAYER.currentAnimationId;
+            OVERLAY_LAYER.prevPriority = OVERLAY_LAYER.priority;
+        }
+
+        if(handSwingTicks < 1 && (OVERLAY_LAYER.currentAnimationId.equals("generic_handswing_right") || OVERLAY_LAYER.currentAnimationId.equals("generic_handswing_left"))) {
+
+
+
+            overlayContainer.setAnimation(null);
+            overlayContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(OVERLAY_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(OVERLAY_LAYER.currentAnimation), true);
         }
         //endregion
 
-        passiveAnimationContainer.setAnimation(null);
         //region Apply Passive Overlay Animation
-        if ((!Objects.equals(currentPassiveOverlayId, prevPassiveOverlayId) && passiveOverlayPriority >= prevPassiveOverlayPriority) || !passiveAnimationContainer.isActive()){
+        if ((!Objects.equals(PASSIVE_LAYER.currentAnimationId, PASSIVE_LAYER.prevAnimationId) && PASSIVE_LAYER.priority >= PASSIVE_LAYER.prevPriority) || !passiveContainer.isActive()){
 
-            passiveAnimationContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(passiveOverlayFadeTime, INOUTSINE), new KeyframeAnimationPlayer(passiveOverlay));
+            passiveContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(PASSIVE_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(PASSIVE_LAYER.currentAnimation), true);
 
 
-            prevPassiveOverlayId = currentPassiveOverlayId;
-            prevPassiveOverlayPriority = passiveOverlayPriority;
+            PASSIVE_LAYER.prevAnimationId = PASSIVE_LAYER.currentAnimationId;
+            PASSIVE_LAYER.prevPriority = PASSIVE_LAYER.priority;
+        }
+        //endregion
+
+        //region Apply LANTERN Overlay Animation
+        if ((!Objects.equals(LANTERN_LAYER.currentAnimationId, LANTERN_LAYER.prevAnimationId) && LANTERN_LAYER.priority >= LANTERN_LAYER.prevPriority) || !passiveContainer.isActive()){
+
+            lanternContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(LANTERN_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(LANTERN_LAYER.currentAnimation), true);
+
+
+            LANTERN_LAYER.prevAnimationId = LANTERN_LAYER.currentAnimationId;
+            LANTERN_LAYER.prevPriority = LANTERN_LAYER.priority;
+        }
+        //endregion
+
+        //region Apply TORCH Overlay Animation
+        if ((!Objects.equals(TORCH_LAYER.currentAnimationId, TORCH_LAYER.prevAnimationId) && TORCH_LAYER.priority >= TORCH_LAYER.prevPriority) || !passiveContainer.isActive()){
+
+            torchContainer.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(TORCH_LAYER.fadeTime, INOUTSINE), new KeyframeAnimationPlayer(TORCH_LAYER.currentAnimation), true);
+
+
+            TORCH_LAYER.prevAnimationId = TORCH_LAYER.currentAnimationId;
+            TORCH_LAYER.prevPriority = TORCH_LAYER.priority;
         }
         //endregion
 
         //region Write TorsoPos
-        if (animationContainer.isActive()){
-            torso2 = animationContainer2.get3DTransform("torso", POSITION, 0, zero);
+        if (mainContainer.isActive()){
+            torso2 = overlayContainer.get3DTransform("torso", POSITION, 0, zero);
             if (torso2.getZ() == 0 && torso2.getY() == 0) {
-                torsoPos = animationContainer.get3DTransform("torso", POSITION, 0, zero);
+                torsoPos = mainContainer.get3DTransform("torso", POSITION, 0, zero);
             } else {
                 torsoPos = torso2;
             }
 
-            torsoRotation2 = animationContainer2.get3DTransform("torso", ROTATION, 0,zero);
+            torsoRotation2 = overlayContainer.get3DTransform("torso", ROTATION, 0,zero);
             if (torsoRotation2.getX() == 0) {
-                torsoRotation = animationContainer.get3DTransform("torso", ROTATION, 0, zero);
+                torsoRotation = mainContainer.get3DTransform("torso", ROTATION, 0, zero);
             } else {
                 torsoRotation = torsoRotation2;
             }

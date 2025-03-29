@@ -1,9 +1,26 @@
 {
   "glorious_animations.midnightconfig.title" : "Glorious Animations",
 
-  "glorious_animations.midnightconfig.category.item_lists" : "Item Types",
-  "glorious_animations.midnightconfig.item_list_desc" : "These are responsible for Usage of Items",
+  "glorious_animations.midnightconfig.category.attack_items" : "Attack Types",
+  "glorious_animations.midnightconfig.attack_items_desc" : "Items in these Lists cause Special Animations when Attacking",
+  "glorious_animations.midnightconfig.sword_attack_items" : "Sword Attacks",
+  "glorious_animations.midnightconfig.axe_attack_items" : "Axe Attacks",
+  "glorious_animations.midnightconfig.pickaxe_attack_items" : "Pickaxe Attacks",
+  "glorious_animations.midnightconfig.shovel_attack_items" : "Shovel Attacks",
+  "glorious_animations.midnightconfig.hoe_attack_items" : "Hoe Attacks",
+  "glorious_animations.midnightconfig.mace_attack_items" : "Mace Attacks",
+  "glorious_animations.midnightconfig.punch_attack_items" : "Punch Attacks",
 
-  "glorious_animations.midnightconfig.sword_attack_items" : "Sword Attacks"
+  "glorious_animations.midnightconfig.category.break_items" : "Break Types",
+  "glorious_animations.midnightconfig.break_items_desc" : "Items in these Lists cause Special Animations when Breaking Blocks",
+  "glorious_animations.midnightconfig.sword_break_items" : "Sword Breaks",
+  "glorious_animations.midnightconfig.axe_break_items" : "Axe Breaks",
+  "glorious_animations.midnightconfig.pickaxe_break_items" : "Pickaxe Breaks",
+  "glorious_animations.midnightconfig.shovel_break_items" : "Shovel Breaks",
+  "glorious_animations.midnightconfig.hoe_break_items" : "Hoe Breaks",
 
+  "glorious_animations.midnightconfig.category.hold_items" : "Hold Types",
+  "glorious_animations.midnightconfig.hold_items_desc" : "Items in these Lists cause Special Animations when Holding them",
+  "glorious_animations.midnightconfig.lantern_items" : "Lanterns",
+  "glorious_animations.midnightconfig.torch_items" : "Torches"
 }

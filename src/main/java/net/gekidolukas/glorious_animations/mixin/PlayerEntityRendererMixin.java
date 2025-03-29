@@ -1,6 +1,7 @@
 package net.gekidolukas.glorious_animations.mixin;
 
 
+import net.gekidolukas.glorious_animations.interfaces.TorsoPosGetter;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
@@ -22,8 +23,8 @@ public abstract class PlayerEntityRendererMixin {
 
     @Inject(method = {"setModelPose"}, at = {@At(value = "INVOKE",target = "Lnet/minecraft/client/render/entity/PlayerEntityRenderer;getArmPose(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/util/Hand;)Lnet/minecraft/client/render/entity/model/BipedEntityModel$ArmPose;", shift = At.Shift.BY, by = 2)})
     private void setModelPose(AbstractClientPlayerEntity player, CallbackInfo ci){
-        player.armPosMain(getArmPose(player, Hand.MAIN_HAND));
-        player.armPosOff(getArmPose(player, Hand.OFF_HAND));
+        ((TorsoPosGetter)player).armPosMain(getArmPose(player, Hand.MAIN_HAND));
+        ((TorsoPosGetter)player).armPosOff(getArmPose(player, Hand.OFF_HAND));
 
     }
 }

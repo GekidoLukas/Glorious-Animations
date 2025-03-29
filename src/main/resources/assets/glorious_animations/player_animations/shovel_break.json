@@ -1,7 +1,7 @@
 {
 	"format_version": "1.8.0",
 	"animations": {
-		"shovel": {
+		"shovel_break": {
 			"loop": true,
 			"animation_length": 1.45833,
 			"bones": {

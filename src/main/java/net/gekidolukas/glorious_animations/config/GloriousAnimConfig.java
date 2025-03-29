@@ -9,11 +9,16 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 
 public class GloriousAnimConfig extends MidnightConfig {
-    private static final String ITEM_LISTS = "item_lists";
+    public static final String ATTACK_ITEMS = "attack_items";
+    public static final String BREAK_ITEMS = "break_items";
+    public static final String HOLD_ITEMS = "hold_items";
 
-    @Comment(category = ITEM_LISTS, centered = true) private static Comment item_list_desc;
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> sword_attack_items = Lists.newArrayList(
+
+    @Comment(category = ATTACK_ITEMS, centered = true) public static Comment attack_items_desc;
+
+    @Entry(category = ATTACK_ITEMS)
+    public static final List<Identifier> sword_attack_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_sword"),
             Identifier.ofVanilla("stone_sword"),
             Identifier.ofVanilla("gold_sword"),
@@ -26,7 +31,8 @@ public class GloriousAnimConfig extends MidnightConfig {
     }
 
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> axe_attack_items = Lists.newArrayList(
+    @Entry(category = ATTACK_ITEMS)
+    public static final List<Identifier> axe_attack_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_axe"),
             Identifier.ofVanilla("stone_axe"),
             Identifier.ofVanilla("gold_axe"),
@@ -38,7 +44,8 @@ public class GloriousAnimConfig extends MidnightConfig {
         return axe_attack_items.contains(Registries.ITEM.getId(item));
     }
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> pickaxe_attack_items = Lists.newArrayList(
+    @Entry(category = ATTACK_ITEMS)
+    public static final List<Identifier> pickaxe_attack_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_pickaxe"),
             Identifier.ofVanilla("stone_pickaxe"),
             Identifier.ofVanilla("gold_pickaxe"),
@@ -50,7 +57,8 @@ public class GloriousAnimConfig extends MidnightConfig {
         return pickaxe_attack_items.contains(Registries.ITEM.getId(item));
     }
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> shovel_attack_items = Lists.newArrayList(
+    @Entry(category = ATTACK_ITEMS)
+    public static final List<Identifier> shovel_attack_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_shovel"),
             Identifier.ofVanilla("stone_shovel"),
             Identifier.ofVanilla("gold_shovel"),
@@ -62,7 +70,8 @@ public class GloriousAnimConfig extends MidnightConfig {
         return shovel_attack_items.contains(Registries.ITEM.getId(item));
     }
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> hoe_attack_items = Lists.newArrayList(
+    @Entry(category = ATTACK_ITEMS)
+    public static final List<Identifier> hoe_attack_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_hoe"),
             Identifier.ofVanilla("stone_hoe"),
             Identifier.ofVanilla("gold_hoe"),
@@ -74,14 +83,16 @@ public class GloriousAnimConfig extends MidnightConfig {
         return hoe_attack_items.contains(Registries.ITEM.getId(item));
     }
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> mace_attack_items = Lists.newArrayList(
+    @Entry(category = ATTACK_ITEMS)
+    public static final List<Identifier> mace_attack_items = Lists.newArrayList(
             Identifier.ofVanilla("mace")
     );
     public static boolean hasMaceAttackAnimation(Item item) {
         return mace_attack_items.contains(Registries.ITEM.getId(item));
     }
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> punch_attack_items = Lists.newArrayList(
+    @Entry(category = ATTACK_ITEMS)
+    public static final List<Identifier> punch_attack_items = Lists.newArrayList(
             Identifier.ofVanilla("air")
     );
     public static boolean hasPunchAttackAnimation(Item item) {
@@ -89,7 +100,11 @@ public class GloriousAnimConfig extends MidnightConfig {
     }
 
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> sword_break_items = Lists.newArrayList(
+    @Comment(category = BREAK_ITEMS, centered = true) public static Comment break_items_desc;
+
+
+    @Entry(category = BREAK_ITEMS)
+    public static final List<Identifier> sword_break_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_sword"),
             Identifier.ofVanilla("stone_sword"),
             Identifier.ofVanilla("gold_sword"),
@@ -102,7 +117,8 @@ public class GloriousAnimConfig extends MidnightConfig {
     }
 
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> axe_break_items = Lists.newArrayList(
+    @Entry(category = BREAK_ITEMS)
+    public static final List<Identifier> axe_break_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_axe"),
             Identifier.ofVanilla("stone_axe"),
             Identifier.ofVanilla("gold_axe"),
@@ -114,7 +130,8 @@ public class GloriousAnimConfig extends MidnightConfig {
         return axe_break_items.contains(Registries.ITEM.getId(item));
     }
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> pickaxe_break_items = Lists.newArrayList(
+    @Entry(category = BREAK_ITEMS)
+    public static final List<Identifier> pickaxe_break_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_pickaxe"),
             Identifier.ofVanilla("stone_pickaxe"),
             Identifier.ofVanilla("gold_pickaxe"),
@@ -126,7 +143,8 @@ public class GloriousAnimConfig extends MidnightConfig {
         return pickaxe_break_items.contains(Registries.ITEM.getId(item));
     }
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> shovel_break_items = Lists.newArrayList(
+    @Entry(category = BREAK_ITEMS)
+    public static final List<Identifier> shovel_break_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_shovel"),
             Identifier.ofVanilla("stone_shovel"),
             Identifier.ofVanilla("gold_shovel"),
@@ -137,7 +155,8 @@ public class GloriousAnimConfig extends MidnightConfig {
     public static boolean hasShovelBreakAnimation(Item item) {
         return shovel_break_items.contains(Registries.ITEM.getId(item));
     }
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> hoe_break_items = Lists.newArrayList(
+    @Entry(category = BREAK_ITEMS)
+    public static final List<Identifier> hoe_break_items = Lists.newArrayList(
             Identifier.ofVanilla("wooden_hoe"),
             Identifier.ofVanilla("stone_hoe"),
             Identifier.ofVanilla("gold_hoe"),
@@ -150,11 +169,26 @@ public class GloriousAnimConfig extends MidnightConfig {
     }
 
 
-    @Entry(category = ITEM_LISTS) private static final List<Identifier> lantern_items = Lists.newArrayList(
+    @Comment(category = HOLD_ITEMS, centered = true) public static Comment hold_items_desc;
+
+
+    @Entry(category = HOLD_ITEMS)
+    public static final List<Identifier> lantern_items = Lists.newArrayList(
             Identifier.ofVanilla("soul_lantern"),
             Identifier.ofVanilla("lantern")
     );
     public static boolean isLanternItem(Item item) {
         return lantern_items.contains(Registries.ITEM.getId(item));
+    }
+
+    @Entry(category = HOLD_ITEMS)
+    public static final List<Identifier> torch_items = Lists.newArrayList(
+            Identifier.ofVanilla("soul_torch"),
+            Identifier.ofVanilla("redstone_torch"),
+            Identifier.ofVanilla("torch"),
+            Identifier.ofVanilla("end_rod")
+    );
+    public static boolean isTorchItem(Item item) {
+        return torch_items.contains(Registries.ITEM.getId(item));
     }
 }

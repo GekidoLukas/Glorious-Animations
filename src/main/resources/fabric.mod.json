@@ -46,7 +46,7 @@
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/client/network/AbstractClientPlayerEntity": ["net/gekidolukas/glorious_animations/interfaces/torsoPosGetter"],
+      "net/minecraft/client/network/AbstractClientPlayerEntity": ["net/gekidolukas/glorious_animations/interfaces/TorsoPosGetter"],
 
       "net/minecraft/entity/player/PlayerEntity": ["net/gekidolukas/glorious_animations/interfaces/SwingTypeGetter"]
       },

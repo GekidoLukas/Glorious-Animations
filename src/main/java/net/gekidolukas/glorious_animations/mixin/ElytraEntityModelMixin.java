@@ -1,7 +1,7 @@
 package net.gekidolukas.glorious_animations.mixin;
 
 import dev.kosmx.playerAnim.core.util.Vec3f;
-import net.gekidolukas.glorious_animations.interfaces.torsoPosGetter;
+import net.gekidolukas.glorious_animations.interfaces.TorsoPosGetter;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.model.AnimalModel;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 
 @Mixin(ElytraEntityModel.class)
-public abstract class ElytraEntityModelMixin <T extends LivingEntity>  extends AnimalModel<T> implements torsoPosGetter {
+public abstract class ElytraEntityModelMixin <T extends LivingEntity>  extends AnimalModel<T> implements TorsoPosGetter {
     float prevY = 0;
     float prevZ = 0;
 
@@ -76,7 +76,7 @@ public abstract class ElytraEntityModelMixin <T extends LivingEntity>  extends A
             abstractClientPlayerEntity.elytraYaw += (n - abstractClientPlayerEntity.elytraYaw) * 0.1F;
             abstractClientPlayerEntity.elytraRoll += (l - abstractClientPlayerEntity.elytraRoll) * 0.1F;
 
-            Vec3f Pos = abstractClientPlayerEntity.getTorsoPos();
+            Vec3f Pos = ((TorsoPosGetter)abstractClientPlayerEntity).getTorsoPos();
 
             if (!Pos.getY().isNaN()) {
                 m = Pos.getY();

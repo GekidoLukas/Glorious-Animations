@@ -3,7 +3,7 @@ package net.gekidolukas.glorious_animations.interfaces;
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 
-public interface torsoPosGetter {
+public interface TorsoPosGetter {
 
     Vec3f getTorsoPos();
 
