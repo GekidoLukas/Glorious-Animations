@@ -39,13 +39,12 @@ public class ItemRendererMixin {
     private static final float ROTATION_MULTIPLIER = 5.0f;
     private static final float MOTION_MULTIPLIER = 10.0f;
     private static final double SMOOTHING_FACTOR = 0.01;
-    private static final double POSITION_THRESHOLD = 0.001; // Schwellwert für Positionsänderungen
+    private static final double POSITION_THRESHOLD = 0.001;
 
 
     @Unique
     private static final Map<Integer, Float> lastYawMap = new HashMap<>();
     @Unique
-//    private static final Map<Integer, Float> lastPitchMap = new HashMap<>();
     private static final Map<Integer, Double> lastXMap = new HashMap<>();
     private static final Map<Integer, Double> lastZMap = new HashMap<>();
 
@@ -79,9 +78,6 @@ public class ItemRendererMixin {
 
             if (Math.abs(dx) < POSITION_THRESHOLD) dx = 0;
             if (Math.abs(dz) < POSITION_THRESHOLD) dz = 0;
-//            GloriousAnimations.LOGGER.info("CURRENT: "+currentX + " " +currentZ);
-//            GloriousAnimations.LOGGER.info("LAST: "+lastX + " " +lastZ);
-//            GloriousAnimations.LOGGER.info("DELTA: "+dx + " " +dz); //TODO Find out, why the Motion only sometimes isn't 0
 
             if((renderMode == ModelTransformationMode.THIRD_PERSON_LEFT_HAND ||
                     renderMode == ModelTransformationMode.THIRD_PERSON_RIGHT_HAND)) {
@@ -122,7 +118,6 @@ public class ItemRendererMixin {
                     BlockState state = blockItem.getBlock().getDefaultState();
                     BakedModel model = blockRenderManager.getModel(state);
 
-//                matrices.multiply(RotationAxis.NEGATIVE_X.rotationDegrees(7));
                     matrices.scale(0.75f,0.75f,0.75f);
                     matrices.translate(-0.5,-0.5,-0.5);
                     matrices.translate(0,0.40,0.15);
@@ -140,7 +135,6 @@ public class ItemRendererMixin {
             }
 
             lastYawMap.put(entityId, smoothYaw);
-//            lastPitchMap.put(entityId, smoothPitch);
             lastXMap.put(entityId, smoothX);
             lastZMap.put(entityId, smoothZ);
 

@@ -60,9 +60,7 @@ public class CommonAnimations {
 
     //region HOLD POSES
     public static KeyframeAnimation LANTERN_HOLD = null;
-    public static KeyframeAnimation LANTERN_HOLD_TWO_HANDS = null;
     public static KeyframeAnimation TORCH_HOLD = null;
-    public static KeyframeAnimation TORCH_HOLD_TWO_HANDS = null;
     //endregion
 
     //region VEHICLE STUFF
@@ -179,9 +177,7 @@ public class CommonAnimations {
 
         //region HOLD POSES
         LANTERN_HOLD = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "lantern_hold"));
-        LANTERN_HOLD_TWO_HANDS = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "lantern_hold_two_hands"));
         TORCH_HOLD = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "torch_hold"));
-        TORCH_HOLD_TWO_HANDS = (KeyframeAnimation) getAnimation(Identifier.of(MOD_ID, "torch_hold_two_hands"));
         //endregion
 
         //region VEHICLE STUFF
