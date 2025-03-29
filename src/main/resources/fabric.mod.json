@@ -18,28 +18,28 @@
   "license": "MIT",
   "icon": "assets/glorious_animations/icon.png",
 
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "main": [
       "net.gekidolukas.glorious_animations.GloriousAnimations"
     ],
     "client": [
+      "net.gekidolukas.glorious_animations.GloriousAnimations"
     ],
     "modmenu": [
       "net.gekidolukas.glorious_animations.config.ModMenuConfig"
     ]
   },
   "mixins": [
-    "sincereplayeranimations.mixins.json"
+    "glorious_animations.mixins.json"
   ],
 
   "depends": {
     "fabricloader": ">=0.14",
     "fabric": "*",
-    "minecraft": ">=1.19",
-    "java": ">=17",
-    "player-animator": ">=0.3",
-    "cloth-config": ">=8.0.0"
+    "minecraft": ">=1.21.1",
+    "java": ">=21",
+    "player-animator": ">=0.3"
   },
   "suggests": {
     "another-mod": "*"

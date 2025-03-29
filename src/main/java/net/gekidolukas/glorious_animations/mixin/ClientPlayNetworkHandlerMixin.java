@@ -2,18 +2,24 @@ package net.gekidolukas.glorious_animations.mixin;
 
 import net.gekidolukas.glorious_animations.CommonAnimations;
 import net.gekidolukas.glorious_animations.interfaces.SwingTypeGetter;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
+import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import net.minecraft.text.Text;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,8 +38,7 @@ public class ClientPlayNetworkHandlerMixin {
         int progress = packet.getProgress();
         Entity entity = MinecraftClient.getInstance().world.getEntityById(breakerId);
         if (entity instanceof PlayerEntity player) {
-            System.out.println("Spieler " + player.getGameProfile().getName() + " bearbeitet einen Block bei " + pos + " mit Fortschritt: " + progress);
-            ((SwingTypeGetter)player).setBlockBreakingTicks(10); //TODO For all Actions and for the client Player itself
+            ((SwingTypeGetter)player).setBlockBreakingTicks(10);
         }
     }
 
@@ -66,5 +71,39 @@ public class ClientPlayNetworkHandlerMixin {
             }
         }
         if(entity != null) entity.discard();
+    }
+
+
+    @Inject(method = "onBlockUpdate", at = @At("HEAD"))
+    private void onEntitySpawn(BlockUpdateS2CPacket packet, CallbackInfo ci) {
+        BlockPos pos = packet.getPos();
+        BlockState newState = packet.getState();
+        if (newState.isAir()) {
+            MinecraftClient client = MinecraftClient.getInstance();
+
+            for (PlayerEntity player : client.world.getPlayers()) {
+                Vec3d eyePos = player.getCameraPosVec(1.0F);
+                Vec3d lookVec = player.getRotationVec(1.0F);
+                double reachDistance = player.getAttributeValue(EntityAttributes.PLAYER_BLOCK_INTERACTION_RANGE);
+                Vec3d target = eyePos.add(lookVec.multiply(reachDistance));
+
+                HitResult result = client.world.raycast(
+                        new RaycastContext(
+                                eyePos,
+                                target,
+                                RaycastContext.ShapeType.OUTLINE,
+                                RaycastContext.FluidHandling.NONE,
+                                player
+                        )
+                );
+
+                if (result.getType() == HitResult.Type.BLOCK) {
+                    BlockHitResult blockResult = (BlockHitResult) result;
+                    if (blockResult.getBlockPos().equals(pos)) {
+                        ((SwingTypeGetter)player).setBlockBreakingTicks(10);
+                    }
+                }
+            }
+        }
     }
 }

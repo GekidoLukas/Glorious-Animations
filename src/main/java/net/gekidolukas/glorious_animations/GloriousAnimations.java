@@ -7,6 +7,7 @@ import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.gekidolukas.glorious_animations.config.GloriousAnimConfig;
 import net.gekidolukas.glorious_animations.config.OldConfigWrapper;
@@ -54,10 +55,10 @@ public class GloriousAnimations implements ModInitializer, ClientModInitializer 
 
 	@Override
 	public void onInitializeClient()  {
-		LOGGER.info("Client Init");
+//		LOGGER.info("Client Init");
 
 		ClientTickEvents.END_CLIENT_TICK.register((minecraftClient -> {
-			LOGGER.info("WHAT");
+//			LOGGER.info("WHAT");
 //			if (minecraftClient.world != null) {
 //				List<AbstractClientPlayerEntity> players = minecraftClient.world.getPlayers();
 //				for (PlayerEntity player : players) {
@@ -72,6 +73,9 @@ public class GloriousAnimations implements ModInitializer, ClientModInitializer 
 		}));
 
 
+		PlayerBlockBreakEvents.AFTER.register(((world, playerEntity, blockPos, blockState, blockEntity) -> {
+//			((SwingTypeGetter)playerEntity).setBlockBreakingTicks(10);
+		}));
 
 	}
 }
